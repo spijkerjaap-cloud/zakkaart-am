@@ -14,6 +14,10 @@
     #root { height: 100%; }
     input[type=number]::-webkit-inner-spin-button,
     input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .picker-scroll::-webkit-scrollbar { display: none; }
+    [data-theme="light"] { background: #F0F4F8; color: #1A1A2E; }
+    [data-theme="light"] .header-bg { background: linear-gradient(180deg, #E8ECF0, #F0F4F8) !important; }
+    @media (prefers-color-scheme: light) { [data-theme="auto"] { background: #F0F4F8; color: #1A1A2E; } }
   </style>
 </head>
 <body>
@@ -80,10 +84,189 @@ function Collapse({ title, color = "#fff", children, defaultOpen = false, icon =
 }
 
 // ============================================================
+// SCROLL PICKER COMPONENT (iOS-stijl trommelroller)
+// ============================================================
+
+function ScrollPicker({ items, selectedIndex, onIndexChange, accentColor = "#2ECC71" }) {
+  const ref = useRef(null);
+  const itemH = 44;
+  const visible = 5;
+  const pad = 2;
+
+  const paddedItems = [
+    ...Array(pad).fill({ label: "", isPad: true }),
+    ...items,
+    ...Array(pad).fill({ label: "", isPad: true }),
+  ];
+
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.scrollTop = selectedIndex * itemH;
+    }
+  }, []);
+
+  const handleScroll = () => {
+    if (!ref.current) return;
+    const idx = Math.round(ref.current.scrollTop / itemH);
+    const clamped = Math.max(0, Math.min(idx, items.length - 1));
+    if (clamped !== selectedIndex) onIndexChange(clamped);
+  };
+
+  return (
+    <div style={{ position: "relative", height: itemH * visible, overflow: "hidden", borderRadius: "12px" }}>
+      <div style={{
+        position: "absolute", top: itemH * pad, left: 0, right: 0, height: itemH,
+        background: `${accentColor}18`, border: `1px solid ${accentColor}40`,
+        borderRadius: "10px", pointerEvents: "none", zIndex: 2,
+      }} />
+      <div style={{
+        position: "absolute", top: 0, left: 0, right: 0, height: itemH * pad,
+        background: "linear-gradient(to bottom, #0D1117 30%, transparent)",
+        pointerEvents: "none", zIndex: 3,
+      }} />
+      <div style={{
+        position: "absolute", bottom: 0, left: 0, right: 0, height: itemH * pad,
+        background: "linear-gradient(to top, #0D1117 30%, transparent)",
+        pointerEvents: "none", zIndex: 3,
+      }} />
+      <div
+        ref={ref}
+        className="picker-scroll"
+        onScroll={handleScroll}
+        style={{
+          height: "100%", overflowY: "scroll",
+          scrollSnapType: "y mandatory",
+          WebkitOverflowScrolling: "touch",
+          scrollbarWidth: "none",
+        }}
+      >
+        {paddedItems.map((item, i) => {
+          const realIdx = i - pad;
+          const isSelected = realIdx === selectedIndex;
+          return (
+            <div
+              key={i}
+              onClick={() => {
+                if (item.isPad) return;
+                onIndexChange(realIdx);
+                if (ref.current) ref.current.scrollTop = realIdx * itemH;
+              }}
+              style={{
+                height: itemH, display: "flex", alignItems: "center",
+                justifyContent: "center", scrollSnapAlign: "center",
+                cursor: item.isPad ? "default" : "pointer",
+                fontSize: isSelected ? "17px" : "13px",
+                fontWeight: isSelected ? 700 : 400,
+                color: isSelected ? "#fff" : "#444",
+                fontFamily: "'JetBrains Mono', monospace",
+                transition: "font-size 0.1s, color 0.1s",
+              }}
+            >
+              {!item.isPad ? item.label : ""}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function calcStandardWeight(ageYears) {
+  const m = ageYears * 12;
+  if (m <= 1) return 4;
+  if (m <= 3) return 5;
+  if (m <= 6) return 7;
+  if (m <= 9) return 9;
+  if (m <= 12) return 10;
+  if (ageYears <= 10) return Math.round(2.5 * ageYears + 8);
+  if (ageYears <= 14) return Math.round(4 * ageYears - 2);
+  return Math.round(5 * ageYears - 10);
+}
+
+// ============================================================
 // DATA CONFIG — Edit hier om content toe te voegen of te wijzigen
 // ============================================================
 
 const VERSIE = "Mei 2026";
+
+// ============================================================
+// MEDICATIE KLEURCODERING (conform fysieke labelrollen op OK)
+// ============================================================
+const MED_KLEUREN = {
+  // Inductie — geel
+  "Propofol": { bg: "#F5C518", text: "#333" },
+  "Propofol (inductie)": { bg: "#F5C518", text: "#333" },
+  "Propofol (onderhoud)": { bg: "#F5C518", text: "#333" },
+  "Thiopental": { bg: "#F5C518", text: "#333" },
+  "Etomidate": { bg: "#F5C518", text: "#333" },
+  "S-Ketamine": { bg: "#F5C518", text: "#333" },
+  "Esketamine": { bg: "#F5C518", text: "#333" },
+  "Ketanest": { bg: "#F5C518", text: "#333" },
+  "Sevofluraan": { bg: "#F5C518", text: "#333" },
+  // Opiaten — lichtblauw (uniform voor alle opioïden)
+  "Morfine": { bg: "#5DADE2", text: "#fff" },
+  "Sufentanil": { bg: "#5DADE2", text: "#fff" },
+  "Sufentanyl": { bg: "#5DADE2", text: "#fff" },
+  "Sufentanil (inductie)": { bg: "#5DADE2", text: "#fff" },
+  "Remifentanil": { bg: "#5DADE2", text: "#fff" },
+  "Fentanyl": { bg: "#5DADE2", text: "#fff" },
+  // Spierverslappers — rood
+  "Rocuronium": { bg: "#E74C3C", text: "#fff" },
+  "Succinylcholine": { bg: "#E74C3C", text: "#fff" },
+  "Atracurium": { bg: "#E74C3C", text: "#fff" },
+  // Anticholinergica & sympathicolytica — paars
+  "Atropine": { bg: "#8E44AD", text: "#fff" },
+  "Atropinesulfaat": { bg: "#8E44AD", text: "#fff" },
+  "+Atropinesulfaat": { bg: "#8E44AD", text: "#fff" },
+  "Atropine (nood)": { bg: "#8E44AD", text: "#fff" },
+  "Efedrine": { bg: "#8E44AD", text: "#fff" },
+  "Glycopyrronium": { bg: "#8E44AD", text: "#fff" },
+  "+Glycopyrronium": { bg: "#8E44AD", text: "#fff" },
+  // Sedativa / hypnotica — oranje
+  "Midazolam": { bg: "#E67E22", text: "#fff" },
+  // Analgetica niet-opioid — oranje (lichter)
+  "Metamizol": { bg: "#F39C12", text: "#333" },
+  "Paracetamol": { bg: "#F39C12", text: "#333" },
+  "Clonidine": { bg: "#F39C12", text: "#333" },
+  // Locale anesthetica — lichtbruin
+  "Lidocaïne": { bg: "#C49A6C", text: "#333" },
+  "Bupivacaïne": { bg: "#C49A6C", text: "#333" },
+  // Vasopressoren — zelfde paars als efedrine
+  "Noradrenaline": { bg: "#8E44AD", text: "#fff" },
+  "Fenylefrine": { bg: "#8E44AD", text: "#fff" },
+  // Noodmedicatie — rood
+  "Adrenaline": { bg: "#C0392B", text: "#fff" },
+  "Adrenaline (nood)": { bg: "#C0392B", text: "#fff" },
+  "Defibrillatie": { bg: "#C0392B", text: "#fff" },
+  // Antagonisten — donkerrood met zwart accent
+  "Sugammadex": { bg: "#7B241C", text: "#fff" },
+  "Naloxone": { bg: "#7B241C", text: "#fff" },
+  "Neostigmine": { bg: "#7B241C", text: "#fff" },
+  "Flumazenil": { bg: "#7B241C", text: "#fff" },
+  // Antiemetica — beige / bruin
+  "Ondansetron": { bg: "#D2B48C", text: "#333" },
+  "Dexamethason": { bg: "#7B3F00", text: "#fff" },
+  "Droperidol": { bg: "#7B3F00", text: "#fff" },
+  // Antibiotica — wit
+  "Cefazoline": { bg: "#ECF0F1", text: "#333" },
+  "Metronidazol": { bg: "#ECF0F1", text: "#333" },
+};
+
+function getMedKleur(naam) {
+  if (!naam) return null;
+  return MED_KLEUREN[naam] || MED_KLEUREN[naam.replace(/\s*\(.*\)/, "")] || null;
+}
+
+// Leeftijdsitems voor trommelroller (1 mnd t/m 18 jr)
+const AGE_ITEMS = (() => {
+  const items = [];
+  for (let m = 1; m <= 11; m++) items.push({ label: `${m} mnd`, value: m / 12 });
+  for (let y = 1; y <= 18; y++) items.push({ label: `${y} jr`, value: y });
+  return items;
+})();
+
+// Gewichtsitems voor trommelroller (3 t/m 80 kg)
+const WEIGHT_ITEMS = Array.from({ length: 78 }, (_, i) => ({ label: `${i + 3} kg`, value: i + 3 }));
 
 const NOODNUMMERS = {
   brand: "8888",
@@ -689,6 +872,9 @@ const MEDICATIE_STANDAARD = [
   { groep: "Anticholinergica", med: "Atropine", inductie: "0,5 mg", onderhoud: "n.v.t." },
   { groep: "Locale anesthetica", med: "Lidocaïne", inductie: "1–1,5 mg/kg IV", onderhoud: "1–2 mg/kg/uur" },
   { groep: "Antibiotica", med: "Cefazoline", inductie: "1–2 g (3g bij BMI >40)", onderhoud: "n.v.t." },
+  { groep: "Antiemetica", med: "Ondansetron", inductie: "4 mg IV", onderhoud: "n.v.t." },
+  { groep: "Antiemetica", med: "Dexamethason", inductie: "4–8 mg IV", onderhoud: "n.v.t." },
+  { groep: "Antiemetica", med: "Droperidol", inductie: "0,625–1,25 mg IV", onderhoud: "n.v.t." },
 ];
 
 // Gedetailleerde geneesmiddelentabel AMC (T.M.S. van Winden, 2016)
@@ -767,7 +953,7 @@ const KINDERMEDICATIE = [
   { med: "Rocuronium", inductie: "0,6 mg/kg", onderhoud: "n.v.t." },
   { med: "Ketanest", inductie: "0,5–1 mg/kg", onderhoud: "n.v.t." },
   { med: "Paracetamol", inductie: "15 mg/kg", onderhoud: "n.v.t." },
-  { med: "Novalgin", inductie: "15 mg/kg", onderhoud: "n.v.t." },
+  { med: "Metamizol", inductie: "15 mg/kg", onderhoud: "n.v.t." },
   { med: "Cefazoline", inductie: "30 mg/kg", onderhoud: "n.v.t." },
   { med: "Metronidazol", inductie: "15 mg/kg", onderhoud: "n.v.t." },
   { med: "Dexamethason", inductie: "0,15 mg/kg", onderhoud: "n.v.t." },
@@ -911,10 +1097,55 @@ const VEILIGHEIDSAFSPRAKEN = [
 ];
 
 const SUPERVISIE = [
-  { niveau: 1, tekst: "Mag observeren, maar de EPA niet uitvoeren." },
-  { niveau: 2, tekst: "Mag uitvoeren onder directe supervisie (supervisor fysiek aanwezig)." },
-  { niveau: 3, tekst: "Mag uitvoeren onder indirecte supervisie (supervisor snel beschikbaar)." },
-  { niveau: 4, tekst: "Voert geheel zelfstandig uit — bekwaam verklaren." },
+  { niveau: 1, tekst: "De student mag observeren, maar de EPA niet uitvoeren." },
+  { niveau: 2, tekst: "De student mag de EPA uitvoeren onder directe supervisie, waarbij de supervisor fysiek aanwezig is in de ruimte." },
+  { niveau: 3, tekst: "De student mag de EPA uitvoeren onder indirecte supervisie, waarbij de supervisor niet fysiek aanwezig is, maar wel snel beschikbaar is als dat nodig is." },
+  { niveau: 4, tekst: "De student voert een activiteit geheel zelfstandig uit. Dit is 'bekwaam verklaren'. Indien de student in deze fase van de opleiding nog niet alleen staat, dient de werkbegeleider het te beoordelen alsof hij/zij niet op de kamer aanwezig zou zijn." },
+];
+
+const CBD_VRAGEN = [
+  { vraag: "Wat heb je gedaan?", doel: "Laat de student de casus (handelingen, bevindingen) en de relatie met de EPA toelichten." },
+  { vraag: "Vraag naar achtergrondkennis: anatomie, pathofysiologie, techniek, klinisch redeneren etc.", doel: "Nagaan of student weet wat ze doet. Check klinisch redeneren." },
+  { vraag: "Welke risico's en mogelijke complicaties spelen er?", doel: "Nagaan of de student voorbereid was op omgaan met risico's en complicaties." },
+  { vraag: "Wat had je anders gedaan als de patiënt of situatie anders was geweest? (Bv. andere culturele achtergrond, medische geschiedenis, onverwachte bevindingen, mentale of fysieke afwijkingen, zelfde casus maar in nachtdienst, etc.)", doel: "Inschatten of een student ook weet hoe te handelen in situaties die je als begeleider mogelijk niet zal observeren." },
+];
+
+const EPA_TIJDSCHEMA = [
+  { code: "MO-AM-1", alias: "AZ-FO-1-BAZ", bvp: true, niveau4HalfJaar: 2 },
+  { code: "AM-FO-1", alias: null, bvp: false, niveau4HalfJaar: 2 },
+  { code: "MO-AM-2", alias: "AZ-FO-2-BAZ", bvp: false, niveau4HalfJaar: 2 },
+  { code: "MO-AM-3", alias: null, bvp: false, niveau4HalfJaar: 2 },
+  { code: "MO-AM-4", alias: null, bvp: false, niveau4HalfJaar: 3 },
+  { code: "MO-AM-5", alias: null, bvp: false, niveau4HalfJaar: 3 },
+  { code: "MO-AM-6", alias: null, bvp: false, niveau4HalfJaar: 4 },
+  { code: "MO-AM-7", alias: null, bvp: false, niveau4HalfJaar: 4 },
+  { code: "MO-AM-8", alias: null, bvp: false, niveau4HalfJaar: 4 },
+  { code: "MO-AM-9", alias: "AZ-FO-3-BAZ", bvp: false, niveau4HalfJaar: 4 },
+  { code: "MO-AM-10", alias: null, bvp: false, niveau4HalfJaar: 5 },
+  { code: "MO-AM-11", alias: null, bvp: false, niveau4HalfJaar: 5 },
+  { code: "MO-AM-12", alias: null, bvp: false, niveau4HalfJaar: 5 },
+  { code: "MO-AM-13", alias: null, bvp: false, niveau4HalfJaar: 5 },
+  { code: "MO-AM-14", alias: null, bvp: false, niveau4HalfJaar: 4 },
+  { code: "MO-AM-15", alias: "AZ-FO-4-BAZ", bvp: false, niveau4HalfJaar: 5 },
+  { code: "MO-AM-16", alias: "AZ-REC-1", bvp: false, niveau4HalfJaar: 4 },
+  { code: "MO-AM-17", alias: "AZ-REC-2", bvp: false, niveau4HalfJaar: 5 },
+  { code: "MO-FO-2", alias: null, bvp: false, niveau4HalfJaar: 6 },
+  { code: "MO-AM-18", alias: null, bvp: false, niveau4HalfJaar: 6 },
+  { code: "MO-AM-19", alias: null, bvp: false, niveau4HalfJaar: 6 },
+  { code: "MO-AM-20", alias: null, bvp: false, niveau4HalfJaar: 5 },
+  { code: "MO-AM-21", alias: null, bvp: false, niveau4HalfJaar: 4 },
+  { code: "MO-AM-22", alias: null, bvp: false, niveau4HalfJaar: 6 },
+  { code: "MO-AM-23", alias: null, bvp: false, niveau4HalfJaar: 6 },
+  { code: "MO-AM-24", alias: null, bvp: false, niveau4HalfJaar: 6 },
+  { code: "MO-AM-25", alias: null, bvp: false, niveau4HalfJaar: 6 },
+  { code: "MO-AM-26", alias: null, bvp: false, niveau4HalfJaar: 6 },
+  { code: "MO-AM-27", alias: null, bvp: false, niveau4HalfJaar: 6 },
+  { code: "MO-AM-28", alias: "AZ-REC-3", bvp: false, niveau4HalfJaar: 5 },
+  { code: "MO-AM-29", alias: null, bvp: false, niveau4HalfJaar: 6 },
+  { code: "MO-AM-30", alias: null, bvp: false, niveau4HalfJaar: 6 },
+  { code: "MO-AM-31", alias: null, bvp: false, niveau4HalfJaar: 6 },
+  { code: "MO-AM-32", alias: null, bvp: false, niveau4HalfJaar: 6 },
+  { code: "MO-AM-33", alias: null, bvp: false, niveau4HalfJaar: 6 },
 ];
 
 const NOODKNOP_INFO = [
@@ -1168,12 +1399,20 @@ const KINDER_CALC_MEDS = [
   { med: "Rocuronium", factor: 0.6, unit: "mg", range: "0,6 mg/kg", categorie: "Relaxantia" },
   { med: "Ketanest", factor: 0.75, unit: "mg", range: "0,5–1 mg/kg", categorie: "Analgetica" },
   { med: "Paracetamol", factor: 15, unit: "mg", range: "15 mg/kg", categorie: "Analgetica" },
-  { med: "Novalgin", factor: 15, unit: "mg", range: "15 mg/kg", categorie: "Analgetica" },
+  { med: "Metamizol", factor: 15, unit: "mg", range: "15 mg/kg", categorie: "Analgetica" },
   { med: "Cefazoline", factor: 30, unit: "mg", range: "30 mg/kg", categorie: "Antibiotica" },
   { med: "Metronidazol", factor: 15, unit: "mg", range: "15 mg/kg", categorie: "Antibiotica" },
   { med: "Dexamethason", factor: 0.15, unit: "mg", range: "0,15 mg/kg", categorie: "Corticosteroïden" },
   { med: "Adrenaline (nood)", factor: 0.01, unit: "mg", range: "0,01 mg/kg", categorie: "Noodmedicatie" },
   { med: "Atropine (nood)", factor: 0.02, unit: "mg", range: "0,02 mg/kg (min 0,1 max 0,5)", categorie: "Noodmedicatie" },
+  { med: "Ondansetron", factor: 0.1, unit: "mg", range: "0,1 mg/kg (max 4 mg)", categorie: "Antiemetica" },
+  { med: "Droperidol", factor: 0.015, unit: "mg", range: "0,01–0,02 mg/kg", categorie: "Antiemetica" },
+];
+
+const ANTIEMETICA = [
+  { naam: "Ondansetron", dosis: "4 mg", obv75: "4 mg, 2 ml", duur: "4–8 uur", conc: "2 mg/ml", inhoud: "2 ml", opmerking: "Max 8 mg per gift. Eerste keuze PONV-profylaxe" },
+  { naam: "Dexamethason", dosis: "4–8 mg", obv75: "4–8 mg, 1–2 ml", duur: "24 uur", conc: "4 mg/ml", inhoud: "1 ml / 5 ml", opmerking: "Combineer met ondansetron bij hoog PONV-risico. Max 12 mg/dag" },
+  { naam: "Droperidol", dosis: "0,625–1,25 mg", obv75: "0,625–1,25 mg", duur: "4–6 uur", conc: "2,5 mg/ml", inhoud: "1 ml", opmerking: "Cave QTc-verlenging. Alternatief bij ondansetron-falen" },
 ];
 
 // Beademingskapje (masker) maten op basis van leeftijd
@@ -1186,14 +1425,14 @@ const MASKER_MATEN = [
   { leeftijdMin: 12, leeftijdMax: 99, label: ">12 jaar", maat: "4–5", kleur: "#9B59B6" },
 ];
 
-// Guedel (orofaryngeale) airway maten
-const GUEDEL_MATEN = [
-  { leeftijdMin: 0, leeftijdMax: 0.5, label: "Neonaat – 6 mnd", maat: "000–00", kleur: "#E74C3C" },
-  { leeftijdMin: 0.5, leeftijdMax: 1, label: "6–12 maanden", maat: "0", kleur: "#E67E22" },
-  { leeftijdMin: 1, leeftijdMax: 3, label: "1–3 jaar", maat: "1", kleur: "#F39C12" },
-  { leeftijdMin: 3, leeftijdMax: 8, label: "3–8 jaar", maat: "1½–2", kleur: "#2ECC71" },
-  { leeftijdMin: 8, leeftijdMax: 14, label: "8–14 jaar", maat: "2–3", kleur: "#3498DB" },
-  { leeftijdMin: 14, leeftijdMax: 99, label: ">14 jaar", maat: "3–4", kleur: "#9B59B6" },
+// LMA (Laryngeal Mask Airway) maten op basis van leeftijd/gewicht
+const LMA_MATEN = [
+  { leeftijdMin: 0, leeftijdMax: 0.5, label: "< 5 kg / neonaat", maat: "1", maxVol: "4 ml", kleur: "#E74C3C" },
+  { leeftijdMin: 0.5, leeftijdMax: 1, label: "5–10 kg / infant", maat: "1½", maxVol: "7 ml", kleur: "#E67E22" },
+  { leeftijdMin: 1, leeftijdMax: 5, label: "10–20 kg / 1–5 jaar", maat: "2", maxVol: "10 ml", kleur: "#F39C12" },
+  { leeftijdMin: 5, leeftijdMax: 8, label: "20–30 kg / 5–8 jaar", maat: "2½", maxVol: "14 ml", kleur: "#2ECC71" },
+  { leeftijdMin: 8, leeftijdMax: 12, label: "30–50 kg / 8–12 jaar", maat: "3", maxVol: "20 ml", kleur: "#3498DB" },
+  { leeftijdMin: 12, leeftijdMax: 99, label: "50–70 kg / volwassene", maat: "4", maxVol: "30 ml", kleur: "#9B59B6" },
 ];
 
 // Dermatomen — landmarks voor klinische oriëntatie
@@ -1482,10 +1721,34 @@ function ZakkaartApp() {
   const [leeftijdCalc, setLeeftijdCalc] = useState("");
   const [expandedALS, setExpandedALS] = useState(null);
   const [plattegrondTab, setPlattegrondTab] = useState("amc");
+  const [plattegrondZoek, setPlattegrondZoek] = useState("");
+
+  // Calculator trommelroller state
+  const defaultLeeftijdIdx = AGE_ITEMS.findIndex(a => a.value === 2) || 13;
+  const [calcLeeftijdIdx, setCalcLeeftijdIdx] = useState(defaultLeeftijdIdx >= 0 ? defaultLeeftijdIdx : 13);
+  const [calcGewichtIdx, setCalcGewichtIdx] = useState(Math.max(0, calcStandardWeight(AGE_ITEMS[defaultLeeftijdIdx >= 0 ? defaultLeeftijdIdx : 13].value) - 3));
+  const [gewichtManual, setGewichtManual] = useState(false);
+
+  // Settings state (geladen vanuit localStorage)
+  const [settings, setSettings] = useState(() => {
+    try {
+      const saved = localStorage.getItem("zakkaart_settings");
+      return saved ? JSON.parse(saved) : { theme: "auto", fontSize: "normal", defaultLocatie: "amc", accentKleur: "#2ECC71", taal: "nl" };
+    } catch { return { theme: "auto", fontSize: "normal", defaultLocatie: "amc", accentKleur: "#2ECC71", taal: "nl" }; }
+  });
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const isDark = settings.theme === "dark" || (settings.theme === "auto" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  const zoomMap = { small: 0.88, normal: 1.0, large: 1.13 };
+  const t = (nl, en) => settings.taal === "en" ? en : nl;
   const [leidingOpen, setLeidingOpen] = useState(false);
   const [selectedBuis, setSelectedBuis] = useState(null);
   const [ecgTab, setEcgTab] = useState("patronen");
   const contentRef = useRef(null);
+
+  // Instellingen opslaan in localStorage
+  useEffect(() => {
+    try { localStorage.setItem("zakkaart_settings", JSON.stringify(settings)); } catch {}
+  }, [settings]);
 
   useEffect(() => {
     if (contentRef.current && activeSection) {
@@ -1623,24 +1886,26 @@ function ZakkaartApp() {
       padding: "8px 0",
       borderBottom: "1px solid rgba(255,255,255,0.04)",
     }}>
-      <span style={{ color: "#ccc", fontSize: "14px" }}>{naam}</span>
+      <span style={{ color: "#ccc", fontSize: "16px" }}>{naam}</span>
       <span style={{
         fontFamily: "'JetBrains Mono', monospace",
         fontWeight: 600,
         color: "#fff",
-        fontSize: "14px",
+        fontSize: "16px",
         letterSpacing: "0.5px",
       }}>{nummer}</span>
     </div>
   );
 
-  const TableRow = ({ cells, header = false }) => (
+  const TableRow = ({ cells, header = false, accentKleur = null }) => (
     <div style={{
       display: "grid",
       gridTemplateColumns: cells.length === 4 ? "1fr 1fr 1fr 1fr" : cells.length === 3 ? "1.2fr 1fr 1fr" : "1fr 1fr",
       gap: "4px",
-      padding: header ? "8px 0" : "6px 0",
+      padding: header ? "8px 0" : "6px 4px",
       borderBottom: "1px solid rgba(255,255,255,0.06)",
+      borderLeft: !header && accentKleur ? `4px solid ${accentKleur}` : !header ? "4px solid transparent" : "none",
+      paddingLeft: !header ? "8px" : "0",
       fontWeight: header ? 700 : 400,
       fontSize: header ? "11px" : "13px",
       textTransform: header ? "uppercase" : "none",
@@ -1701,7 +1966,11 @@ function ZakkaartApp() {
       </div>
       <Collapse title="Noodmedicatie" color="#E74C3C">
         {NOODMEDICATIE.map((m, i) => (
-          <div key={i} style={{ padding: "8px 0", borderBottom: i < NOODMEDICATIE.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
+          <div key={i} style={{
+            padding: "8px 0 8px 8px",
+            borderBottom: i < NOODMEDICATIE.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none",
+            borderLeft: `4px solid ${getMedKleur(m.med)?.bg || "#E74C3C"}`,
+          }}>
             <div style={{ fontWeight: 700, color: "#fff", fontSize: "15px" }}>{m.med}</div>
             <div style={{ fontSize: "13px", color: "#aaa", marginTop: "2px" }}>
               <span style={{ fontFamily: "'JetBrains Mono', monospace", color: "#F39C12" }}>{m.dosering}</span>
@@ -1816,7 +2085,7 @@ function ZakkaartApp() {
         )}
       </div>
 
-      <Collapse title="Vaste nummers" color="#3498DB">
+      <Collapse title="Vaste nummers" color="#3498DB" defaultOpen={true}>
         {data.vast.map((p, i) => <PhoneRow key={i} {...p} />)}
       </Collapse>
       {data.dagcentrumOK && (
@@ -2008,13 +2277,87 @@ function ZakkaartApp() {
     </div>
   );
 
+  const renderSettings = () => {
+    if (!settingsOpen) return null;
+    const bg = isDark ? "#161B22" : "#fff";
+    const textClr = isDark ? "#fff" : "#1A1A2E";
+    const borderClr = isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.1)";
+    const OptionRow = ({ label, children }) => (
+      <div style={{ marginBottom: "20px" }}>
+        <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "1.5px", color: "#888", marginBottom: "8px" }}>{label}</div>
+        <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>{children}</div>
+      </div>
+    );
+    const Chip = ({ active, onClick, color, children }) => (
+      <button onClick={onClick} style={{
+        padding: "7px 14px", borderRadius: "20px", border: `1px solid ${active ? (color || settings.accentKleur) : borderClr}`,
+        background: active ? `${color || settings.accentKleur}22` : "transparent",
+        color: active ? (color || settings.accentKleur) : "#888",
+        fontWeight: active ? 700 : 400, fontSize: "13px", cursor: "pointer", fontFamily: "inherit",
+      }}>{children}</button>
+    );
+    return (
+      <div onClick={() => setSettingsOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 9997 }}>
+        <div onClick={e => e.stopPropagation()} style={{
+          position: "absolute", right: 0, top: 0, bottom: 0, width: "300px",
+          background: bg, color: textClr, overflowY: "auto",
+          padding: "24px 20px", boxShadow: "-4px 0 24px rgba(0,0,0,0.3)",
+        }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+            <div style={{ fontWeight: 700, fontSize: "18px" }}>{t("Instellingen", "Settings")}</div>
+            <button onClick={() => setSettingsOpen(false)} style={{ background: "none", border: "none", color: "#888", fontSize: "22px", cursor: "pointer" }}>✕</button>
+          </div>
+
+          <OptionRow label={t("Thema", "Theme")}>
+            <Chip active={settings.theme === "dark"} onClick={() => setSettings(s => ({...s, theme: "dark"}))}>{t("Donker", "Dark")}</Chip>
+            <Chip active={settings.theme === "light"} onClick={() => setSettings(s => ({...s, theme: "light"}))}>{t("Licht", "Light")}</Chip>
+            <Chip active={settings.theme === "auto"} onClick={() => setSettings(s => ({...s, theme: "auto"}))}>{t("Automatisch", "Auto")}</Chip>
+          </OptionRow>
+
+          <OptionRow label={t("Lettergrootte", "Font size")}>
+            <Chip active={settings.fontSize === "small"} onClick={() => setSettings(s => ({...s, fontSize: "small"}))}>{t("Klein", "Small")}</Chip>
+            <Chip active={settings.fontSize === "normal"} onClick={() => setSettings(s => ({...s, fontSize: "normal"}))}>{t("Normaal", "Normal")}</Chip>
+            <Chip active={settings.fontSize === "large"} onClick={() => setSettings(s => ({...s, fontSize: "large"}))}>{t("Groot", "Large")}</Chip>
+          </OptionRow>
+
+          <OptionRow label={t("Standaard locatie", "Default location")}>
+            <Chip active={settings.defaultLocatie === "amc"} onClick={() => setSettings(s => ({...s, defaultLocatie: "amc"}))}>AMC</Chip>
+            <Chip active={settings.defaultLocatie === "vumc"} onClick={() => setSettings(s => ({...s, defaultLocatie: "vumc"}))}>VUmc</Chip>
+          </OptionRow>
+
+          <div style={{ marginBottom: "20px" }}>
+            <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "1.5px", color: "#888", marginBottom: "8px" }}>{t("Kleuraccent", "Accent color")}</div>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              {["#2ECC71","#3498DB","#E67E22","#E74C3C","#9B59B6","#1ABC9C","#F39C12"].map(c => (
+                <button key={c} onClick={() => setSettings(s => ({...s, accentKleur: c}))} style={{
+                  width: "28px", height: "28px", borderRadius: "50%", background: c, border: settings.accentKleur === c ? `3px solid #fff` : "3px solid transparent", cursor: "pointer",
+                }} />
+              ))}
+              <input type="color" value={settings.accentKleur} onChange={e => setSettings(s => ({...s, accentKleur: e.target.value}))}
+                style={{ width: "28px", height: "28px", borderRadius: "50%", border: "none", cursor: "pointer", background: "none" }} />
+            </div>
+          </div>
+
+          <OptionRow label={t("Taal", "Language")}>
+            <Chip active={settings.taal === "nl"} onClick={() => setSettings(s => ({...s, taal: "nl"}))}>Nederlands</Chip>
+            <Chip active={settings.taal === "en"} onClick={() => setSettings(s => ({...s, taal: "en"}))}>English</Chip>
+          </OptionRow>
+
+          <div style={{ marginTop: "24px", padding: "12px", background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)", borderRadius: "10px", fontSize: "11px", color: "#888", lineHeight: 1.6 }}>
+            {t("Instellingen worden automatisch opgeslagen op dit apparaat.", "Settings are automatically saved on this device.")}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderMedicatie = () => (
     <div>
       <Collapse title="Standaardmedicatie volwassenen" color="#E67E22">
         <div style={{ overflowX: "auto" }}>
           <TableRow cells={["Medicament", "Inductie", "Onderhoud"]} header />
           {MEDICATIE_STANDAARD.map((m, i) => (
-            <TableRow key={i} cells={[m.med, m.inductie, m.onderhoud]} />
+            <TableRow key={i} cells={[m.med, m.inductie, m.onderhoud]} accentKleur={getMedKleur(m.med)?.bg} />
           ))}
         </div>
       </Collapse>
@@ -2025,11 +2368,14 @@ function ZakkaartApp() {
             const itemKleur = cat.categorie === "Antagonisten"
               ? (i % 2 === 0 ? "#8B5E3C" : "#C49A6C")
               : cat.kleur;
+            const medKleurBg = getMedKleur(m.naam)?.bg;
             return (
             <div key={i} style={{
               paddingBottom: i < cat.meds.length - 1 ? "12px" : 0,
               marginBottom: i < cat.meds.length - 1 ? "12px" : 0,
               borderBottom: i < cat.meds.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none",
+              borderLeft: medKleurBg ? `4px solid ${medKleurBg}` : "4px solid transparent",
+              paddingLeft: "8px",
             }}>
               <div style={{ fontWeight: 700, color: "#fff", fontSize: "14px", marginBottom: "6px" }}>{m.naam}</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 10px" }}>
@@ -2220,17 +2566,63 @@ function ZakkaartApp() {
         <div style={{ overflowX: "auto" }}>
           <TableRow cells={["Medicament", "Inductie", "Onderhoud"]} header />
           {KINDERMEDICATIE.map((m, i) => (
-            <TableRow key={i} cells={[m.med, m.inductie, m.onderhoud]} />
+            <TableRow key={i} cells={[m.med, m.inductie, m.onderhoud]} accentKleur={getMedKleur(m.med)?.bg} />
           ))}
         </div>
       </Collapse>
       <Collapse title="Noodmedicatie kinderen" color="#E74C3C">
         {NOODMEDICATIE.map((m, i) => (
-          <div key={i} style={{ padding: "8px 0", borderBottom: i < NOODMEDICATIE.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
+          <div key={i} style={{
+            padding: "8px 0 8px 8px",
+            borderBottom: i < NOODMEDICATIE.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none",
+            borderLeft: `4px solid ${getMedKleur(m.med)?.bg || "#E74C3C"}`,
+          }}>
             <div style={{ fontWeight: 700, color: "#fff" }}>{m.med}</div>
             <div style={{ fontSize: "13px", color: "#aaa" }}>
               <span style={{ fontFamily: "'JetBrains Mono', monospace", color: "#E74C3C" }}>{m.dosering}</span> — {m.indicatie}
             </div>
+          </div>
+        ))}
+      </Collapse>
+
+      <Collapse title="Antiemetica — PONV-profylaxe" color="#16A085">
+        <div style={{ fontSize: "11px", color: "#666", marginBottom: "10px" }}>
+          Middelen tegen postoperatieve misselijkheid en braken (PONV)
+        </div>
+        {ANTIEMETICA.map((m, i) => (
+          <div key={i} style={{
+            paddingBottom: i < ANTIEMETICA.length - 1 ? "12px" : 0,
+            marginBottom: i < ANTIEMETICA.length - 1 ? "12px" : 0,
+            borderBottom: i < ANTIEMETICA.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none",
+            borderLeft: `4px solid ${getMedKleur(m.naam)?.bg || "#16A085"}`,
+            paddingLeft: "8px",
+          }}>
+            <div style={{ fontWeight: 700, color: "#fff", fontSize: "14px", marginBottom: "6px" }}>{m.naam}</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px 10px" }}>
+              {[
+                { label: "Dosis", val: m.dosis },
+                { label: "~75 kg", val: m.obv75 },
+                { label: "Duur", val: m.duur },
+                { label: "Conc.", val: m.conc },
+                { label: "Ampul", val: m.inhoud },
+              ].filter(r => r.val && r.val !== "—").map((row, j) => (
+                <div key={j} style={{ fontSize: "12px" }}>
+                  <span style={{ color: "#666" }}>{row.label}: </span>
+                  <span style={{ fontFamily: "'JetBrains Mono', monospace", color: "#16A085" }}>{row.val}</span>
+                </div>
+              ))}
+            </div>
+            {m.opmerking && (
+              <div style={{
+                marginTop: "6px",
+                fontSize: "12px",
+                color: "#F39C12",
+                background: "rgba(243,156,18,0.06)",
+                padding: "4px 8px",
+                borderRadius: "6px",
+                border: "1px solid rgba(243,156,18,0.12)",
+              }}>💡 {m.opmerking}</div>
+            )}
           </div>
         ))}
       </Collapse>
@@ -2509,47 +2901,126 @@ function ZakkaartApp() {
 
   const renderEPAs = () => (
     <div>
-      <Collapse title="Supervisieniveaus" color="#1ABC9C">
+      <Collapse title="Supervisieniveaus" color="#1ABC9C" defaultOpen={true}>
         {SUPERVISIE.map((s, i) => (
           <div key={i} style={{
             display: "flex",
             gap: "12px",
             padding: "10px 0",
-            borderBottom: "1px solid rgba(255,255,255,0.06)",
+            borderBottom: i < SUPERVISIE.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none",
             alignItems: "flex-start",
           }}>
             <span style={{
-              width: "28px",
-              height: "28px",
+              width: "32px",
+              height: "32px",
               borderRadius: "8px",
               background: s.niveau === 4 ? "#1ABC9C" : `rgba(26,188,156,${0.15 + s.niveau * 0.1})`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontWeight: 900,
-              fontSize: "14px",
+              fontSize: "15px",
               flexShrink: 0,
               color: s.niveau === 4 ? "#fff" : "#1ABC9C",
             }}>{s.niveau}</span>
-            <span style={{ fontSize: "13px", color: "#ccc", lineHeight: 1.5 }}>{s.tekst}</span>
+            <span style={{ fontSize: "13px", color: "#ccc", lineHeight: 1.6 }}>{s.tekst}</span>
           </div>
         ))}
       </Collapse>
-      <Collapse title="Bewijsinstrumenten" color="#1ABC9C">
+
+      <Collapse title="Bewijsinstrumenten EPA's" color="#1ABC9C">
         {[
-          { naam: "KPE van dienst", desc: "Dagevaluatie gekoppeld aan meerdere EPA's." },
-          { naam: "KPE Specifiek", desc: "Feedback op specifieke EPA's. Invullen na voldoende niveau 4 bewijslast." },
-          { naam: "CBD", desc: "Mondeling klinisch redeneren over een casus met werkbegeleider." },
-          { naam: "OSATS", desc: "Observatie van medisch-technische vaardigheid." },
-          { naam: "Reflectie", desc: "Reflectieverslag aan de hand van STARR methode." },
-          { naam: "Product", desc: "Feedback op opdracht, verslag, of presentatie." },
-          { naam: "EOL formulier", desc: "Registratie van EOL-uren." },
+          {
+            naam: "KPE van dienst",
+            desc: "Een KPE die gekoppeld kan worden aan meerdere EPA's, waardoor er met één formulier bewijsstukken voor diverse EPA's verzameld kan worden. De KPE van dienst kan gezien worden als dagevaluatie. De student laat hier groei in de ontwikkeling zien aan de hand van de verschillende supervisieniveaus.",
+          },
+          {
+            naam: "KPE Specifiek",
+            desc: "Formulier waarmee feedback op specifieke EPA's en overstijgende feedback gegeven wordt. KPE specifiek kan worden ingevuld wanneer voldoende bewijslast op niveau 4 in de KPE van dienst is verzameld. KPE specifiek mag daarna direct op niveau 4 worden afgetekend.",
+          },
+          {
+            naam: "CBD — Case Based Discussion",
+            desc: "Instrument waarmee samen met de werkbegeleider mondeling klinisch wordt geredeneerd over een casus. In het gesprek kunnen variaties op de daadwerkelijke casus worden besproken om na te gaan hoe de student hiermee om zou gaan. De centrale vraag is: 'Kan ik de student deze EPA toevertrouwen in verschillende situaties?'",
+            vragen: true,
+          },
+          {
+            naam: "Vaardigheidstoets / OSATS",
+            desc: "Bij de vaardigheidstoets observeert de werkbegeleider de student terwijl hij/zij een medisch-technische vaardigheid die onderdeel is van een EPA uitvoert, door middel van een Objective Structured Assessment of Technical Skills (OSATS).",
+          },
+          {
+            naam: "Reflectie",
+            desc: "Instrument waarmee feedback wordt gegeven op het leerproces door middel van een reflectieverslag aan de hand van de STARR methode.",
+          },
+          {
+            naam: "Product",
+            desc: "Instrument waarmee feedback gegeven wordt op een opdracht, verslag, presentatie etc. waarin de anesthesiemedewerker in opleiding aan een gedeelte van de EPA gewerkt heeft (in een bijlage/link).",
+          },
+          {
+            naam: "EOL formulier",
+            desc: "Registratieformulier om de uren bij te houden die gemaakt zijn voor de EOL.",
+          },
         ].map((item, i) => (
-          <div key={i} style={{ padding: "8px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-            <div style={{ fontWeight: 700, color: "#fff", fontSize: "14px" }}>{item.naam}</div>
-            <div style={{ fontSize: "12px", color: "#aaa", marginTop: "2px" }}>{item.desc}</div>
+          <div key={i} style={{ padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+            <div style={{ fontWeight: 700, color: "#1ABC9C", fontSize: "14px", marginBottom: "4px" }}>{item.naam}</div>
+            <div style={{ fontSize: "13px", color: "#bbb", lineHeight: 1.6 }}>{item.desc}</div>
+            {item.vragen && (
+              <div style={{ marginTop: "10px" }}>
+                <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "1px", color: "#555", marginBottom: "6px" }}>Onderwerpen case based discussie</div>
+                {CBD_VRAGEN.map((v, j) => (
+                  <div key={j} style={{
+                    background: "rgba(26,188,156,0.06)",
+                    borderLeft: "2px solid #1ABC9C",
+                    padding: "8px 10px",
+                    marginBottom: "6px",
+                    borderRadius: "0 6px 6px 0",
+                  }}>
+                    <div style={{ fontSize: "12px", color: "#fff", fontWeight: 600, marginBottom: "2px" }}>{v.vraag}</div>
+                    <div style={{ fontSize: "11px", color: "#888" }}>{v.doel}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         ))}
+      </Collapse>
+
+      <Collapse title="Tijdschema EPA's" color="#1ABC9C">
+        <div style={{ fontSize: "11px", color: "#666", marginBottom: "10px" }}>
+          Streefmoment niveau 4 per EPA — Leerjaar 1 t/m 3 (6 halfjaren)
+        </div>
+        {[1,2,3,4,5,6].map(hj => {
+          const kleurMap = { 1: "#D4AC0D", 2: "#D4AC0D", 3: "#E67E22", 4: "#E67E22", 5: "#3498DB", 6: "#9B59B6" };
+          const kleur = kleurMap[hj];
+          const epas = EPA_TIJDSCHEMA.filter(e => e.niveau4HalfJaar === hj);
+          const lj = hj <= 2 ? 1 : hj <= 4 ? 2 : 3;
+          return (
+            <div key={hj} style={{ marginBottom: "10px" }}>
+              <div style={{
+                fontSize: "11px",
+                fontWeight: 700,
+                color: kleur,
+                textTransform: "uppercase",
+                letterSpacing: "1px",
+                marginBottom: "4px",
+              }}>Leerjaar {lj} — {hj}e halfjaar</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                {epas.map((e, i) => (
+                  <div key={i} style={{
+                    background: `${kleur}18`,
+                    border: `1px solid ${kleur}40`,
+                    borderRadius: "6px",
+                    padding: "4px 8px",
+                    fontSize: "11px",
+                  }}>
+                    <span style={{ fontFamily: "'JetBrains Mono', monospace", color: kleur, fontWeight: 700 }}>{e.code}</span>
+                    {e.alias && <span style={{ color: "#666", marginLeft: "4px" }}>({e.alias})</span>}
+                    {e.bvp && <span style={{ marginLeft: "4px", color: "#F39C12", fontSize: "10px" }}>BVP ✓</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </Collapse>
     </div>
   );
@@ -2653,14 +3124,12 @@ function ZakkaartApp() {
   );
 
   const renderCalculator = () => {
-    const w = parseFloat(gewicht);
-    const age = parseFloat(leeftijdCalc);
-    const hasWeight = !isNaN(w) && w > 0;
-    const hasAge = !isNaN(age) && age >= 0;
-
-    // Auto-calculate weight from age if only age given
-    const calcWeight = hasWeight ? w : (hasAge ? 2.5 * age + 8 : null);
-    const ettMaat = hasAge ? (age / 4 + 3.5).toFixed(1) : null;
+    const age = AGE_ITEMS[calcLeeftijdIdx]?.value ?? null;
+    const w = WEIGHT_ITEMS[calcGewichtIdx]?.value ?? null;
+    const hasAge = age != null;
+    const hasWeight = w != null;
+    const calcWeight = w;
+    const ettMaat = hasAge && age >= 1 ? (age / 4 + 3.5).toFixed(1) : null;
     const ettDiepte = ettMaat ? (parseFloat(ettMaat) * 3).toFixed(1) : null;
     const maagSonde = ettMaat ? (parseFloat(ettMaat) * 2).toFixed(1) : null;
 
@@ -2672,81 +3141,52 @@ function ZakkaartApp() {
 
     return (
       <div>
-        <Collapse title="Kinderdoseringscalculator" color="#2ECC71">
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "10px",
-            marginBottom: "16px",
-          }}>
-            <div>
-              <label style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "1px", color: "#888", display: "block", marginBottom: "6px" }}>
-                Gewicht (kg)
-              </label>
-              <input
-                type="number"
-                inputMode="decimal"
-                placeholder="bijv. 15"
-                value={gewicht}
-                onChange={e => setGewicht(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  background: "rgba(46,204,113,0.08)",
-                  border: "1px solid rgba(46,204,113,0.3)",
-                  borderRadius: "10px",
-                  color: "#fff",
-                  fontSize: "18px",
-                  fontWeight: 700,
-                  fontFamily: "'JetBrains Mono', monospace",
-                  outline: "none",
-                  boxSizing: "border-box",
-                  textAlign: "center",
+        {/* Sticky calculator header met trommelrollers */}
+        <div style={{
+          position: "sticky", top: 0, zIndex: 10,
+          background: "#0D1117", paddingBottom: "12px",
+          marginBottom: "8px", borderBottom: "1px solid rgba(255,255,255,0.08)",
+        }}>
+          <div style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.5px", color: settings.accentKleur, marginBottom: "10px" }}>
+            {t("Kinderdoseringscalculator", "Pediatric dose calculator")}
+          </div>
+          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: "10px", color: "#666", textTransform: "uppercase", letterSpacing: "1px", textAlign: "center", marginBottom: "4px" }}>
+                {t("Leeftijd", "Age")}
+              </div>
+              <ScrollPicker
+                items={AGE_ITEMS}
+                selectedIndex={calcLeeftijdIdx}
+                onIndexChange={idx => {
+                  setCalcLeeftijdIdx(idx);
+                  const ageVal = AGE_ITEMS[idx].value;
+                  const stdW = calcStandardWeight(ageVal);
+                  setCalcGewichtIdx(Math.max(0, Math.min(stdW - 3, WEIGHT_ITEMS.length - 1)));
+                  setGewichtManual(false);
                 }}
+                accentColor={settings.accentKleur}
               />
             </div>
-            <div>
-              <label style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "1px", color: "#888", display: "block", marginBottom: "6px" }}>
-                Leeftijd (jaren)
-              </label>
-              <input
-                type="number"
-                inputMode="decimal"
-                placeholder="bijv. 4"
-                value={leeftijdCalc}
-                onChange={e => setLeeftijdCalc(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  background: "rgba(52,152,219,0.08)",
-                  border: "1px solid rgba(52,152,219,0.3)",
-                  borderRadius: "10px",
-                  color: "#fff",
-                  fontSize: "18px",
-                  fontWeight: 700,
-                  fontFamily: "'JetBrains Mono', monospace",
-                  outline: "none",
-                  boxSizing: "border-box",
-                  textAlign: "center",
-                }}
+            <div style={{ color: "#333", fontSize: "16px", flexShrink: 0 }}>→</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: "10px", color: gewichtManual ? "#F39C12" : "#666", textTransform: "uppercase", letterSpacing: "1px", textAlign: "center", marginBottom: "4px" }}>
+                {gewichtManual ? t("Gewicht ✎", "Weight ✎") : t("Gewicht", "Weight")}
+              </div>
+              <ScrollPicker
+                items={WEIGHT_ITEMS}
+                selectedIndex={calcGewichtIdx}
+                onIndexChange={idx => { setCalcGewichtIdx(idx); setGewichtManual(true); }}
+                accentColor={gewichtManual ? "#F39C12" : settings.accentKleur}
               />
             </div>
           </div>
-          {!hasWeight && hasAge && (
-            <div style={{
-              background: "rgba(52,152,219,0.1)",
-              borderRadius: "8px",
-              padding: "8px 12px",
-              fontSize: "13px",
-              color: "#3498DB",
-              marginBottom: "12px",
-              border: "1px solid rgba(52,152,219,0.2)",
-            }}>
-              Geschat gewicht o.b.v. leeftijd: <strong style={{ fontFamily: "'JetBrains Mono', monospace" }}>{calcWeight?.toFixed(1)} kg</strong>
-              <span style={{ fontSize: "11px", color: "#888", marginLeft: "6px" }}>(2,5 × {age} + 8)</span>
+          {!gewichtManual && (
+            <div style={{ fontSize: "10px", color: "#444", textAlign: "center", marginTop: "6px" }}>
+              {t("Standaardgewicht o.b.v. leeftijd", "Standard weight by age")}
             </div>
           )}
-        </Collapse>
+        </div>
 
         {/* ETT / Tube info */}
         {hasAge && (
@@ -2777,16 +3217,16 @@ function ZakkaartApp() {
           </Collapse>
         )}
 
-        {/* Beademingskapje & Guedel maten */}
+        {/* Beademingskapje & LMA maten */}
         {hasAge && (
-          <Collapse title="Beademingskapje & Guedel" color="#9B59B6">
+          <Collapse title="Beademingskapje & LMA" color="#9B59B6">
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
               {(() => {
                 const masker = MASKER_MATEN.find(m => age >= m.leeftijdMin && age < m.leeftijdMax) || MASKER_MATEN[MASKER_MATEN.length - 1];
-                const guedel = GUEDEL_MATEN.find(g => age >= g.leeftijdMin && age < g.leeftijdMax) || GUEDEL_MATEN[GUEDEL_MATEN.length - 1];
+                const lma = LMA_MATEN.find(g => age >= g.leeftijdMin && age < g.leeftijdMax) || LMA_MATEN[LMA_MATEN.length - 1];
                 return [
-                  { label: "Beademingskapje", maat: masker.maat, sub: masker.label, kleur: masker.kleur },
-                  { label: "Guedel airway", maat: guedel.maat, sub: guedel.label, kleur: guedel.kleur },
+                  { label: "Beademingskapje", maat: masker.maat, sub: masker.label, kleur: masker.kleur, extra: null },
+                  { label: "LMA", maat: lma.maat, sub: lma.label, kleur: lma.kleur, extra: `Manchet max ${lma.maxVol}` },
                 ].map((item, i) => (
                   <div key={i} style={{
                     background: `${item.kleur}12`,
@@ -2809,13 +3249,14 @@ function ZakkaartApp() {
                       color: item.kleur,
                     }}>maat {item.maat}</div>
                     <div style={{ fontSize: "11px", color: "#666", marginTop: "4px" }}>{item.sub}</div>
+                    {item.extra && <div style={{ fontSize: "10px", color: item.kleur, marginTop: "4px", fontWeight: 600 }}>{item.extra}</div>}
                   </div>
                 ));
               })()}
             </div>
-            {/* Reference table */}
+            {/* Reference tabel masker */}
             <div style={{ marginTop: "14px" }}>
-              <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", color: "#555", marginBottom: "6px" }}>Alle maten referentie</div>
+              <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", color: "#555", marginBottom: "6px" }}>Beademingskapje — alle maten</div>
               {MASKER_MATEN.map((m, i) => {
                 const isActive = age >= m.leeftijdMin && age < m.leeftijdMax;
                 const isLast = i === MASKER_MATEN.length - 1 && age >= m.leeftijdMin;
@@ -2832,14 +3273,39 @@ function ZakkaartApp() {
                     fontSize: "12px",
                   }}>
                     <span style={{ color: highlight ? "#fff" : "#666" }}>{m.label}</span>
-                    <span style={{
-                      fontFamily: "'JetBrains Mono', monospace",
-                      fontWeight: highlight ? 700 : 400,
-                      color: highlight ? m.kleur : "#555",
-                    }}>maat {m.maat}</span>
+                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: highlight ? 700 : 400, color: highlight ? m.kleur : "#555" }}>maat {m.maat}</span>
                   </div>
                 );
               })}
+            </div>
+            {/* Reference tabel LMA */}
+            <div style={{ marginTop: "12px" }}>
+              <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", color: "#555", marginBottom: "6px" }}>LMA — alle maten</div>
+              {LMA_MATEN.map((m, i) => {
+                const isActive = age >= m.leeftijdMin && age < m.leeftijdMax;
+                const isLast = i === LMA_MATEN.length - 1 && age >= m.leeftijdMin;
+                const highlight = isActive || isLast;
+                return (
+                  <div key={i} style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "5px 8px",
+                    borderRadius: "6px",
+                    background: highlight ? `${m.kleur}15` : "transparent",
+                    border: highlight ? `1px solid ${m.kleur}30` : "1px solid transparent",
+                    marginBottom: "2px",
+                    fontSize: "12px",
+                  }}>
+                    <span style={{ color: highlight ? "#fff" : "#666" }}>{m.label}</span>
+                    <span style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: highlight ? 700 : 400, color: highlight ? m.kleur : "#555" }}>maat {m.maat}</span>
+                      <span style={{ fontSize: "10px", color: "#555" }}>{m.maxVol}</span>
+                    </span>
+                  </div>
+                );
+              })}
+              <div style={{ fontSize: "10px", color: "#555", marginTop: "6px" }}>* Bij volwassenen: maat 4 (50–70 kg), maat 5 (70–100 kg), maat 6 (&gt;100 kg)</div>
             </div>
           </Collapse>
         )}
@@ -2884,13 +3350,15 @@ function ZakkaartApp() {
                   dosis = Math.max(0.1, Math.min(0.5, dosis));
                 }
                 const dosisStr = dosis < 1 ? dosis.toFixed(2) : dosis < 10 ? dosis.toFixed(1) : dosis.toFixed(0);
+                const medKleur = getMedKleur(m.med);
                 return (
                   <div key={i} style={{
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    padding: "10px 0",
+                    padding: "10px 0 10px 8px",
                     borderBottom: i < meds.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none",
+                    borderLeft: medKleur ? `4px solid ${medKleur.bg}` : "4px solid transparent",
                     gap: "8px",
                   }}>
                     <div>
@@ -2919,14 +3387,8 @@ function ZakkaartApp() {
             </Card>
           ))
         ) : (
-          <div style={{
-            textAlign: "center",
-            padding: "32px 16px",
-            color: "#586069",
-            fontSize: "14px",
-            lineHeight: 1.6,
-          }}>
-            Vul gewicht of leeftijd in om doseringen te berekenen
+          <div style={{ textAlign: "center", padding: "16px", color: "#586069", fontSize: "13px" }}>
+            {t("Selecteer leeftijd om doseringen te berekenen", "Select age to calculate doses")}
           </div>
         )}
       </div>
@@ -3135,8 +3597,68 @@ function ZakkaartApp() {
       </Card>
     );
 
+    const zoekTerm = plattegrondZoek.toLowerCase().trim();
+    const gefilterdeAMCBouwdelen = zoekTerm
+      ? AMC_BOUWDELEN.filter(bd =>
+          bd.afdelingen.some(afd => afd.toLowerCase().includes(zoekTerm)) ||
+          bd.bouwdeel.toLowerCase().includes(zoekTerm) ||
+          bd.omschrijving.toLowerCase().includes(zoekTerm)
+        )
+      : AMC_BOUWDELEN;
+
     return (
       <div>
+        {/* Zoekbalk */}
+        <div style={{ marginBottom: "12px", position: "relative" }}>
+          <input
+            type="text"
+            placeholder="Zoek afdeling of bouwdeel (bijv. CCU, apotheek)…"
+            value={plattegrondZoek}
+            onChange={e => setPlattegrondZoek(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "10px 36px 10px 14px",
+              borderRadius: "10px",
+              border: "1px solid rgba(255,255,255,0.12)",
+              background: "rgba(255,255,255,0.06)",
+              color: "#fff",
+              fontSize: "14px",
+              fontFamily: "inherit",
+              outline: "none",
+            }}
+          />
+          {plattegrondZoek && (
+            <button onClick={() => setPlattegrondZoek("")} style={{
+              position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)",
+              background: "none", border: "none", color: "#888", cursor: "pointer", fontSize: "16px",
+            }}>✕</button>
+          )}
+        </div>
+        {/* Zoekresultaten */}
+        {zoekTerm && (
+          <div style={{ marginBottom: "12px" }}>
+            {gefilterdeAMCBouwdelen.length === 0 ? (
+              <div style={{ color: "#888", fontSize: "13px", padding: "8px" }}>Geen resultaten gevonden.</div>
+            ) : (
+              gefilterdeAMCBouwdelen.map((bd, i) => (
+                <div key={i} style={{
+                  background: `${bd.kleur}15`,
+                  border: `1px solid ${bd.kleur}40`,
+                  borderRadius: "10px",
+                  padding: "10px 14px",
+                  marginBottom: "8px",
+                }}>
+                  <div style={{ fontWeight: 700, color: bd.kleur, fontSize: "13px", marginBottom: "4px" }}>
+                    Bouwdeel {bd.bouwdeel} — {bd.omschrijving}
+                  </div>
+                  {bd.afdelingen.filter(afd => !zoekTerm || afd.toLowerCase().includes(zoekTerm)).map((afd, j) => (
+                    <div key={j} style={{ fontSize: "13px", color: "#ccc", padding: "2px 0 2px 10px" }}>· {afd}</div>
+                  ))}
+                </div>
+              ))
+            )}
+          </div>
+        )}
         {/* Tab switcher */}
         <div style={{
           display: "flex",
@@ -3218,7 +3740,7 @@ function ZakkaartApp() {
                 </div>
               ))}
             </Collapse>
-            {AMC_BOUWDELEN.map((bd, i) => (
+            {(zoekTerm ? [] : AMC_BOUWDELEN).map((bd, i) => (
               <Collapse key={i} title={`Bouwdeel ${bd.bouwdeel}`} color={bd.kleur}>
                 <div style={{ fontSize: "12px", color: "#888", marginBottom: "8px", fontStyle: "italic" }}>{bd.omschrijving}</div>
                 {bd.afdelingen.map((afd, j) => (
@@ -3893,15 +4415,20 @@ function ZakkaartApp() {
   const activeSectionData = SECTIONS.find(s => s.id === activeSection);
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "#0D1117",
-      color: "#fff",
-      fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
-      maxWidth: "480px",
-      margin: "0 auto",
-      position: "relative",
-    }}>
+    <div
+      data-theme={settings.theme}
+      style={{
+        minHeight: "100vh",
+        background: isDark ? "#0D1117" : "#F0F4F8",
+        color: isDark ? "#fff" : "#1A1A2E",
+        fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
+        maxWidth: "480px",
+        margin: "0 auto",
+        position: "relative",
+        zoom: zoomMap[settings.fontSize] || 1,
+      }}
+    >
+      {renderSettings()}
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
       {/* Buis modal — top level zodat position:fixed altijd werkt */}
@@ -4032,16 +4559,24 @@ function ZakkaartApp() {
               </div>
             </div>
           )}
-          {activeSection && activeSectionData && (
-            <div style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-            }}>
-              <span style={{ color: activeSectionData.color }}>{activeSectionData.icon}</span>
-              <span style={{ fontWeight: 700, fontSize: "16px" }}>{activeSectionData.label}</span>
-            </div>
-          )}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            {activeSection && activeSectionData && (
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span style={{ color: activeSectionData.color }}>{activeSectionData.icon}</span>
+                <span style={{ fontWeight: 700, fontSize: "16px" }}>{activeSectionData.label}</span>
+              </div>
+            )}
+            {!activeSection && (
+              <button
+                onClick={() => setSettingsOpen(true)}
+                style={{
+                  background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
+                  borderRadius: "10px", padding: "8px 10px", cursor: "pointer",
+                  color: "#aaa", fontSize: "18px", lineHeight: 1,
+                }}
+              >⚙</button>
+            )}
+          </div>
         </div>
 
         {/* Search */}

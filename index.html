@@ -3144,15 +3144,33 @@ function ZakkaartApp() {
         {/* Sticky calculator header met trommelrollers */}
         <div style={{
           position: "sticky", top: 0, zIndex: 10,
-          background: "#0D1117", paddingBottom: "12px",
-          marginBottom: "8px", borderBottom: "1px solid rgba(255,255,255,0.08)",
+          background: "linear-gradient(180deg, #161B22 0%, #0D1117 100%)",
+          border: `1px solid ${settings.accentKleur}40`,
+          borderRadius: "16px",
+          padding: "14px 14px 10px",
+          marginBottom: "16px",
+          boxShadow: `0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px ${settings.accentKleur}20`,
         }}>
-          <div style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.5px", color: settings.accentKleur, marginBottom: "10px" }}>
-            {t("Kinderdoseringscalculator", "Pediatric dose calculator")}
+          {/* Titel */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+            <div style={{
+              width: "8px", height: "8px", borderRadius: "50%",
+              background: settings.accentKleur, flexShrink: 0,
+              boxShadow: `0 0 8px ${settings.accentKleur}`,
+            }} />
+            <div style={{ fontSize: "13px", fontWeight: 700, color: "#fff", letterSpacing: "0.5px" }}>
+              {t("Kinderdosering", "Pediatric dosing")}
+            </div>
+            <div style={{ fontSize: "11px", color: "#555", marginLeft: "auto" }}>
+              {t("Rol om in te stellen", "Scroll to set")}
+            </div>
           </div>
-          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: "10px", color: "#666", textTransform: "uppercase", letterSpacing: "1px", textAlign: "center", marginBottom: "4px" }}>
+
+          {/* Rollers */}
+          <div style={{ display: "flex", gap: "10px", alignItems: "stretch" }}>
+            {/* Leeftijd */}
+            <div style={{ flex: 1, background: "rgba(255,255,255,0.04)", borderRadius: "12px", padding: "8px 6px 4px" }}>
+              <div style={{ fontSize: "11px", fontWeight: 700, color: settings.accentKleur, textTransform: "uppercase", letterSpacing: "1px", textAlign: "center", marginBottom: "6px" }}>
                 {t("Leeftijd", "Age")}
               </div>
               <ScrollPicker
@@ -3168,10 +3186,14 @@ function ZakkaartApp() {
                 accentColor={settings.accentKleur}
               />
             </div>
-            <div style={{ color: "#333", fontSize: "16px", flexShrink: 0 }}>→</div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: "10px", color: gewichtManual ? "#F39C12" : "#666", textTransform: "uppercase", letterSpacing: "1px", textAlign: "center", marginBottom: "4px" }}>
-                {gewichtManual ? t("Gewicht ✎", "Weight ✎") : t("Gewicht", "Weight")}
+
+            {/* Divider */}
+            <div style={{ display: "flex", alignItems: "center", color: "#444", fontSize: "20px", flexShrink: 0 }}>→</div>
+
+            {/* Gewicht */}
+            <div style={{ flex: 1, background: gewichtManual ? "rgba(243,156,18,0.08)" : "rgba(255,255,255,0.04)", borderRadius: "12px", padding: "8px 6px 4px", border: gewichtManual ? "1px solid rgba(243,156,18,0.3)" : "1px solid transparent" }}>
+              <div style={{ fontSize: "11px", fontWeight: 700, color: gewichtManual ? "#F39C12" : settings.accentKleur, textTransform: "uppercase", letterSpacing: "1px", textAlign: "center", marginBottom: "6px" }}>
+                {gewichtManual ? t("Gewicht (handmatig)", "Weight (manual)") : t("Gewicht", "Weight")}
               </div>
               <ScrollPicker
                 items={WEIGHT_ITEMS}
@@ -3181,11 +3203,15 @@ function ZakkaartApp() {
               />
             </div>
           </div>
-          {!gewichtManual && (
-            <div style={{ fontSize: "10px", color: "#444", textAlign: "center", marginTop: "6px" }}>
-              {t("Standaardgewicht o.b.v. leeftijd", "Standard weight by age")}
-            </div>
-          )}
+
+          {/* Samenvatting huidig gewicht */}
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px", padding: "8px 12px", background: "rgba(255,255,255,0.04)", borderRadius: "8px" }}>
+            <span style={{ fontSize: "12px", color: "#666" }}>{AGE_ITEMS[calcLeeftijdIdx]?.label}</span>
+            <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'JetBrains Mono', monospace" }}>
+              {WEIGHT_ITEMS[calcGewichtIdx]?.label}
+              {!gewichtManual && <span style={{ fontSize: "10px", color: "#444", marginLeft: "4px" }}>std</span>}
+            </span>
+          </div>
         </div>
 
         {/* ETT / Tube info */}

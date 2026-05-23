@@ -4444,7 +4444,9 @@ function ZakkaartApp() {
     <div
       data-theme={settings.theme}
       style={{
-        minHeight: "100vh",
+        height: "100vh",
+        overflowY: "auto",
+        WebkitOverflowScrolling: "touch",
         background: isDark ? "#0D1117" : "#F0F4F8",
         color: isDark ? "#fff" : "#1A1A2E",
         fontFamily: "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",

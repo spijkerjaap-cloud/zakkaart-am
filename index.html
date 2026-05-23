@@ -15,6 +15,9 @@
     input[type=number]::-webkit-inner-spin-button,
     input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
     .picker-scroll::-webkit-scrollbar { display: none; }
+    .picker-scroll { scrollbar-width: none; -ms-overflow-style: none; }
+    #root > div::-webkit-scrollbar { display: none; }
+    #root > div { scrollbar-width: none; -ms-overflow-style: none; }
     [data-theme="light"] { background: #F0F4F8; color: #1A1A2E; }
     [data-theme="light"] .header-bg { background: linear-gradient(180deg, #E8ECF0, #F0F4F8) !important; }
     @media (prefers-color-scheme: light) { [data-theme="auto"] { background: #F0F4F8; color: #1A1A2E; } }
@@ -205,6 +208,7 @@ const MED_KLEUREN = {
   "Sevofluraan": { bg: "#F5C518", text: "#333" },
   // Opiaten — lichtblauw (uniform voor alle opioïden)
   "Morfine": { bg: "#5DADE2", text: "#fff" },
+  "Methadon": { bg: "#5DADE2", text: "#fff" },
   "Sufentanil": { bg: "#5DADE2", text: "#fff" },
   "Sufentanyl": { bg: "#5DADE2", text: "#fff" },
   "Sufentanil (inductie)": { bg: "#5DADE2", text: "#fff" },
@@ -225,8 +229,8 @@ const MED_KLEUREN = {
   // Sedativa / hypnotica — oranje
   "Midazolam": { bg: "#E67E22", text: "#fff" },
   // Analgetica niet-opioid — oranje (lichter)
-  "Metamizol": { bg: "#F39C12", text: "#333" },
-  "Paracetamol": { bg: "#F39C12", text: "#333" },
+  "Metamizol": { bg: "#FFFFFF", text: "#333" },
+  "Paracetamol": { bg: "#FFFFFF", text: "#333" },
   "Clonidine": { bg: "#F39C12", text: "#333" },
   // Locale anesthetica — lichtbruin
   "Lidocaïne": { bg: "#C49A6C", text: "#333" },
@@ -249,6 +253,8 @@ const MED_KLEUREN = {
   "Droperidol": { bg: "#7B3F00", text: "#fff" },
   // Antibiotica — wit
   "Cefazoline": { bg: "#ECF0F1", text: "#333" },
+  // Antifibrinolytica — wit
+  "Tranexaminezuur": { bg: "#FFFFFF", text: "#333" },
   "Metronidazol": { bg: "#ECF0F1", text: "#333" },
 };
 
@@ -284,8 +290,7 @@ const TELEFOON_AMC = {
     { naam: "Bloedbank", nummer: "62526" },
     { naam: "Citolab", nummer: "62525" },
     { naam: "ICT", nummer: "63011" },
-    { naam: "Perfusie koffiekamer", nummer: "62611" },
-    { naam: "Perfusie", nummer: "57388" },
+    { naam: "Perfusie kantoor", nummer: "62611" },
     { naam: "Patiëntenvervoer", nummer: "63300" },
   ],
   dagcentrumOK: [
@@ -324,6 +329,7 @@ const TELEFOON_AMC = {
     { naam: "Schoonmaak", nummer: "81-59398" },
     { naam: "Stip IC", nummer: "81-58315" },
     { naam: "Apotheek op OK", nummer: "81-59481" },
+    { naam: "Perfusie", nummer: "81-57388" },
   ],
   dienstAM: [
     { naam: "MT 1", nummer: "81-595821" },
@@ -859,22 +865,30 @@ const ABCDE = [
 ];
 
 const MEDICATIE_STANDAARD = [
-  { groep: "Anesthetica", med: "Propofol", inductie: "1–2,5 mg/kg", onderhoud: "4–12 mg/kg/uur" },
-  { groep: "Analgetica/anesthetica", med: "Esketamine", inductie: "0,25–0,5 mg/kg", onderhoud: "0,1–0,2 mg/kg/uur" },
-  { groep: "Opioïden", med: "Sufentanil", inductie: "0,1–0,5 µg/kg", onderhoud: "0,1–0,3 µg/kg/uur" },
-  { groep: "Opioïden", med: "Remifentanil", inductie: "0,5–1 µg/kg/min", onderhoud: "0,05–0,3 µg/kg/min" },
-  { groep: "Opioïden", med: "Morfine", inductie: "0,05–0,2 mg/kg", onderhoud: "0,05–0,1 mg/kg/uur" },
-  { groep: "Relaxantia", med: "Rocuronium", inductie: "0,6–1,2 (RSI) mg/kg", onderhoud: "n.v.t." },
-  { groep: "Sympathicomimetica", med: "Efedrine", inductie: "3–9 mg per keer", onderhoud: "n.v.t." },
-  { groep: "Sympathicomimetica", med: "Noradrenaline", inductie: "0,05–0,1 µg/kg/min", onderhoud: "0,02–1 µg/kg/min" },
-  { groep: "Sympathicomimetica", med: "Fenylefrine", inductie: "50–100 µg per keer", onderhoud: "n.v.t." },
-  { groep: "Sympathicomimetica", med: "Adrenaline", inductie: "10–100 µg", onderhoud: "0,05–0,5 µg/kg/min" },
-  { groep: "Anticholinergica", med: "Atropine", inductie: "0,5 mg", onderhoud: "n.v.t." },
-  { groep: "Locale anesthetica", med: "Lidocaïne", inductie: "1–1,5 mg/kg IV", onderhoud: "1–2 mg/kg/uur" },
-  { groep: "Antibiotica", med: "Cefazoline", inductie: "1–2 g (3g bij BMI >40)", onderhoud: "n.v.t." },
-  { groep: "Antiemetica", med: "Ondansetron", inductie: "4 mg IV", onderhoud: "n.v.t." },
-  { groep: "Antiemetica", med: "Dexamethason", inductie: "4–8 mg IV", onderhoud: "n.v.t." },
-  { groep: "Antiemetica", med: "Droperidol", inductie: "0,625–1,25 mg IV", onderhoud: "n.v.t." },
+  { groep: "Anesthetica", med: "Propofol", concentratie: "10 mg/ml (1%) <3 jr · 20 mg/ml (2%) ≥3 jr", inductie: "1–2,5 mg/kg", onderhoud: "4–12 mg/kg/uur" },
+  { groep: "Anesthetica", med: "Thiopental", concentratie: "25 mg/ml", inductie: "3–5 mg/kg", onderhoud: "n.v.t." },
+  { groep: "Anesthetica", med: "Midazolam", concentratie: "1 mg/ml", inductie: "0,05–0,1 mg/kg", onderhoud: "n.v.t." },
+  { groep: "Analgetica/anesthetica", med: "Esketamine", concentratie: "5 mg/ml", inductie: "0,25–0,5 mg/kg", onderhoud: "0,1–0,2 mg/kg/uur" },
+  { groep: "Opioïden", med: "Sufentanil", concentratie: "5 µg/ml", inductie: "0,1–0,5 µg/kg", onderhoud: "0,1–0,3 µg/kg/uur" },
+  { groep: "Opioïden", med: "Remifentanil", concentratie: "50 µg/ml", inductie: "0,5–1 µg/kg/min", onderhoud: "0,05–0,3 µg/kg/min" },
+  { groep: "Opioïden", med: "Morfine", concentratie: "1 mg/ml", inductie: "0,05–0,2 mg/kg", onderhoud: "0,05–0,1 mg/kg/uur" },
+  { groep: "Opioïden", med: "Methadon", concentratie: "10 mg/ml", inductie: "0,1–0,2 mg/kg", onderhoud: "n.v.t." },
+  { groep: "Opioïden", med: "Fentanyl", concentratie: "50 µg/ml", inductie: "1–3 µg/kg", onderhoud: "n.v.t." },
+  { groep: "Relaxantia", med: "Rocuronium", concentratie: "10 mg/ml", inductie: "0,6–1,2 (RSI) mg/kg", onderhoud: "n.v.t." },
+  { groep: "Relaxantia", med: "Succinylcholine", concentratie: "50 mg/ml", inductie: "1–1,5 mg/kg", onderhoud: "n.v.t." },
+  { groep: "Sympathicomimetica", med: "Efedrine", concentratie: "5 mg/ml", inductie: "3–9 mg per keer", onderhoud: "n.v.t." },
+  { groep: "Sympathicomimetica", med: "Noradrenaline", concentratie: "20 µg/ml", inductie: "0,05–0,1 µg/kg/min", onderhoud: "0,02–1 µg/kg/min" },
+  { groep: "Sympathicomimetica", med: "Fenylefrine", concentratie: "100 µg/ml", inductie: "50–100 µg per keer", onderhoud: "n.v.t." },
+  { groep: "Sympathicomimetica", med: "Adrenaline", concentratie: "10 µg/ml (pomp) · 0,1 mg/ml (nood 1:10.000)", inductie: "10–100 µg", onderhoud: "0,05–0,5 µg/kg/min" },
+  { groep: "Anticholinergica", med: "Atropine", concentratie: "0,5 mg/ml", inductie: "0,5 mg", onderhoud: "n.v.t." },
+  { groep: "Locale anesthetica", med: "Lidocaïne", concentratie: "10 mg/ml (1%)", inductie: "1–1,5 mg/kg IV", onderhoud: "1–2 mg/kg/uur" },
+  { groep: "Antibiotica", med: "Cefazoline", concentratie: "100 mg/ml (2 g in 20 ml NaCl 0,9%)", inductie: "1–2 g (3g bij BMI >40)", onderhoud: "n.v.t." },
+  { groep: "Antifibrinolytica", med: "Tranexaminezuur", concentratie: "100 mg/ml", inductie: "10–15 mg/kg", onderhoud: "n.v.t." },
+  { groep: "Analgetica niet-opioïd", med: "Paracetamol", concentratie: "10 mg/ml", inductie: "1 g IV", onderhoud: "n.v.t." },
+  { groep: "Analgetica niet-opioïd", med: "Metamizol", concentratie: "500 mg/ml", inductie: "1–2,5 g IV", onderhoud: "n.v.t." },
+  { groep: "Antiemetica", med: "Ondansetron", concentratie: "2 mg/ml", inductie: "4 mg IV", onderhoud: "n.v.t." },
+  { groep: "Antiemetica", med: "Dexamethason", concentratie: "4 mg/ml", inductie: "4–8 mg IV", onderhoud: "n.v.t." },
+  { groep: "Antiemetica", med: "Droperidol", concentratie: "2,5 mg/ml", inductie: "0,625–1,25 mg IV", onderhoud: "n.v.t." },
 ];
 
 // Gedetailleerde geneesmiddelentabel AMC (T.M.S. van Winden, 2016)
@@ -904,7 +918,7 @@ const MEDICATIE_DETAIL = [
     meds: [
       { naam: "Succinylcholine", dosis: "1–2 mg/kg", obv75: "75 mg, 7,5 ml", duur: "—", conc: "50 mg/ml", inhoud: "10 ml", opmerking: "Depolariserend, mn obstetrie" },
       { naam: "Rocuronium", dosis: "0,6–1,2 mg/kg", obv75: "50 mg, 5 ml", duur: "—", conc: "10 mg/ml", inhoud: "5 ml", opmerking: "High dose; onset < 60 s" },
-      { naam: "Atracurium", dosis: "0,5 mg/kg", obv75: "37,5 mg", duur: "—", conc: "10 mg/ml", inhoud: "—", opmerking: "In AMC evt bij nierinsufficientie" },
+      { naam: "Atracurium", dosis: "0,5 mg/kg", obv75: "37,5 mg", duur: "—", conc: "10 mg/ml", inhoud: "—", opmerking: "In AUMC, locatie AMC evt bij nierinsufficientie" },
     ],
   },
   {
@@ -986,6 +1000,83 @@ const BEADEMING = [
   { param: "PEEP", waarde: "5–8 cmH₂O" },
 ];
 
+// ============================================================
+// ROTEM — Stollingsdiagnostiek (AUMC protocol)
+// ============================================================
+const ROTEM_PROTOCOL = [
+  {
+    titel: "Fibrinogeen",
+    kleur: "#E67E22",
+    triggers: [
+      { criterium: "<strong>FIBTEM A10</strong> &lt; 10 mm", actie: "Fibrinogeen 25 mg/kg" },
+      { criterium: "<strong>FIBTEM A10</strong> &lt; 6 mm", actie: "Fibrinogeen 50 mg/kg" },
+    ],
+  },
+  {
+    titel: "Trombocyten",
+    kleur: "#27AE60",
+    triggers: [
+      { criterium: "<strong>EXTEM A10</strong> MIN <strong>FIBTEM A10</strong> &lt; 30 mm", actie: "1–2 EH trombocyten" },
+    ],
+  },
+  {
+    titel: "Stollingsfactoren",
+    kleur: "#3498DB",
+    triggers: [
+      { criterium: "<strong>FIBTEM A10</strong> &gt; 10 mm <span style='color:#E74C3C;font-weight:700'>EN</span> <strong>EXTEM CT</strong> &gt; 80 sec", actie: "10 ml/kg plasma OF 10 IE/kg 4FC" },
+    ],
+  },
+  {
+    titel: "Hyperfibrinolyse",
+    kleur: "#F39C12",
+    triggers: [
+      { criterium: "<strong>EXTEM ML</strong> &gt; 15% <span style='color:#E74C3C;font-weight:700'>OF</span> <strong>FIBTEM ML</strong> &gt; 15%", actie: "Tranexaminezuur 15 mg/kg" },
+    ],
+  },
+];
+
+const ROTEM_PARAMETERS = [
+  {
+    groep: "Stollingsactivatie & polymerisatie",
+    kleur: "#3498DB",
+    params: [
+      { acroniem: "CT", naam: "Coagulation Time (r)", beschrijving: "Tijd vanaf teststart tot 2 mm amplitude bereikt is.", unit: "sec" },
+      { acroniem: "CFT", naam: "Clot Formation Time (k)", beschrijving: "Tijd tussen 2 mm en 20 mm amplitude.", unit: "sec" },
+    ],
+  },
+  {
+    groep: "Stolselsterkte (clot firmness)",
+    kleur: "#27AE60",
+    params: [
+      { acroniem: "MCF", naam: "Maximum Clot Firmness (MA)", beschrijving: "Maximale amplitude bereikt tijdens de test.", unit: "mm" },
+      { acroniem: "A5", naam: "Firmness na 5 minuten", beschrijving: "Stolselsterkte 5 min na CT.", unit: "mm" },
+      { acroniem: "A10", naam: "Firmness na 10 minuten", beschrijving: "Stolselsterkte 10 min na CT — meest gebruikt voor protocol.", unit: "mm" },
+      { acroniem: "A20", naam: "Firmness na 20 minuten", beschrijving: "Stolselsterkte 20 min na CT.", unit: "mm" },
+      { acroniem: "A30", naam: "Firmness na 30 minuten", beschrijving: "Stolselsterkte 30 min na CT.", unit: "mm" },
+    ],
+  },
+  {
+    groep: "Stolsel-afbraak (lysis)",
+    kleur: "#F39C12",
+    params: [
+      { acroniem: "ML", naam: "Maximum Lysis", beschrijving: "Max. lysis tijdens run: verschil tussen MCF en laagste amplitude na MCF, als % van MCF.", unit: "%" },
+      { acroniem: "LI30", naam: "Lysis Index 30 min", beschrijving: "A/MCF × 100 op CT + 30 min.", unit: "%" },
+      { acroniem: "LI45", naam: "Lysis Index 45 min", beschrijving: "A/MCF × 100 op CT + 45 min.", unit: "%" },
+      { acroniem: "LI60", naam: "Lysis Index 60 min", beschrijving: "A/MCF × 100 op CT + 60 min.", unit: "%" },
+      { acroniem: "LOT", naam: "Lysis Onset Time", beschrijving: "Tijd vanaf CT tot start van significante lysis (amplitude-daling ≥15% t.o.v. MCF).", unit: "sec" },
+    ],
+  },
+];
+
+const ROTEM_TESTS = [
+  { naam: "EXTEM", kleur: "#E74C3C", uitleg: "Extrinsiek (weefselfactor). Globale stolling — gevoelig voor factor II, V, VII, X, fibrinogeen & trombocyten." },
+  { naam: "INTEM", kleur: "#3498DB", uitleg: "Intrinsiek (ellaginezuur). Toont factor VIII, IX, XI, XII + fibrinogeen & trombocyten. Verlengd door heparine." },
+  { naam: "FIBTEM", kleur: "#E67E22", uitleg: "EXTEM + cytochalasine D (trombocytenremmer). Isoleert bijdrage van fibrinogeen alleen." },
+  { naam: "HEPTEM", kleur: "#9B59B6", uitleg: "INTEM + heparinase. Vergelijk met INTEM → effect van heparine zichtbaar maken." },
+  { naam: "APTEM", kleur: "#16A085", uitleg: "EXTEM + aprotinine. Vergelijk met EXTEM → bevestigt hyperfibrinolyse." },
+  { naam: "NATEM", kleur: "#7F8C8D", uitleg: "Niet-geactiveerd (alleen recalcificatie). Zelden gebruikt." },
+];
+
 const SBAR = {
   situation: [
     "Naam en geboortedatum patiënt",
@@ -1010,6 +1101,115 @@ const SBAR = {
   ],
   recommendation: ["Welke risico's worden verwacht"],
 };
+
+// ============================================================
+// ROOSTER (OWS) — codes & dienst-toeslagen
+// ============================================================
+const ROOSTER_GROEPEN = [
+  {
+    naam: "Dagdienst & varianten",
+    kleur: "#E67E22",
+    codes: [
+      { naam: "Dagdienst", vu: "BD", amc: "MD", tijdVU: "7:15–16:45", tijdAMC: "7:30–17:00" },
+      { naam: "Dagdienst Flex", vu: "Bf", amc: "Mf", tijdVU: "7:15–16:45", tijdAMC: "7:30–17:00" },
+      { naam: "Dagdienst Flex met uitloop", vu: "Bu", amc: "Mu", tijdVU: "7:15–16:45", tijdAMC: "7:30–17:00" },
+      { naam: "Trauma/reanimatiesein", vu: "—", amc: "MDtr", tijdVU: "—", tijdAMC: "7:30–17:00" },
+      { naam: "Dagcoördinator", vu: "BDc", amc: "MDc", tijdVU: "7:00–16:30", tijdAMC: "7:30–17:00" },
+      { naam: "Dagcoördinator flex", vu: "BDcf", amc: "MDcf", tijdVU: "7:00–16:45", tijdAMC: "7:30–17:00" },
+      { naam: "Dagcoördinator flex + uitloop", vu: "BDcu", amc: "MDcu", tijdVU: "7:00–16:45", tijdAMC: "7:30–17:00" },
+      { naam: "Kantoordag", vu: "Bk", amc: "Mk", tijdVU: "7:15–16:45", tijdAMC: "7:30–17:00" },
+      { naam: "Reïntegreren", vu: "Bi", amc: "Mi", tijdVU: "7:15–16:45", tijdAMC: "7:30–17:00" },
+      { naam: "Dagdienst Leidinggevende", vu: "BL", amc: "ML", tijdVU: "7:15–16:45", tijdAMC: "7:30–17:00" },
+    ],
+  },
+  {
+    naam: "Tussen / Middag / Avond / Nacht",
+    kleur: "#27AE60",
+    codes: [
+      { naam: "Tussendienst", vu: "BT", amc: "MT", tijdVU: "9:30–19:00", tijdAMC: "9:00–18:30" },
+      { naam: "Middagdienst", vu: "BM", amc: "—", tijdVU: "12:00–21:30", tijdAMC: "—" },
+      { naam: "Avonddienst", vu: "BA", amc: "MA", tijdVU: "13:30–23:00", tijdAMC: "13:30–23:00" },
+      { naam: "Nachtdienst", vu: "BN", amc: "MN", tijdVU: "22:30–8:00", tijdAMC: "22:30–8:00" },
+    ],
+  },
+  {
+    naam: "Sedatie",
+    kleur: "#F1C40F",
+    codes: [
+      { naam: "Dagdienst Sedatie", vu: "BS", amc: "MS", tijdVU: "7:30–17:00", tijdAMC: "7:30–17:00" },
+      { naam: "Sedatie Flex", vu: "BSf", amc: "MSf", tijdVU: "7:30–17:00", tijdAMC: "7:30–17:00" },
+      { naam: "Sedatie Flex + uitloop", vu: "BSu", amc: "MSu", tijdVU: "7:30–17:00", tijdAMC: "7:30–17:00" },
+      { naam: "Dagdienst Sed Cursist", vu: "BSc", amc: "MSc", tijdVU: "7:30–17:00", tijdAMC: "7:30–17:00" },
+      { naam: "Sedatie Cursist Flex", vu: "BScf", amc: "MScf", tijdVU: "7:30–17:00", tijdAMC: "7:30–17:00" },
+      { naam: "Sedatie Cursist Flex + uitloop", vu: "BScu", amc: "MScu", tijdVU: "7:30–17:00", tijdAMC: "7:30–17:00" },
+      { naam: "Sedatie POS", vu: "Bp", amc: "Mp", tijdVU: "7:30–17:00", tijdAMC: "7:30–17:00" },
+      { naam: "Tussendienst Sedatie", vu: "BT*", amc: "MT*", tijdVU: "9:30–19:00", tijdAMC: "9:00–18:30" },
+    ],
+  },
+  {
+    naam: "Simulatie",
+    kleur: "#E91E63",
+    codes: [
+      { naam: "Simulatie dagdienst CRM", vu: "BSIMc", amc: "MSIMc", tijdVU: "7:15–16:45", tijdAMC: "7:30–17:00" },
+      { naam: "Simulatie dagdienst Teamz", vu: "BSIMt", amc: "MSIMt", tijdVU: "7:15–16:45", tijdAMC: "7:30–17:00" },
+      { naam: "Simulatie dagdienst Grens", vu: "BSIMg", amc: "MSIMg", tijdVU: "7:15–16:45", tijdAMC: "7:30–17:00" },
+      { naam: "Operator sim", vu: "BOP", amc: "MOP", tijdVU: "7:15–16:45", tijdAMC: "7:30–17:00" },
+    ],
+  },
+  {
+    naam: "Stage / Buitenland / Vrij",
+    kleur: "#8E44AD",
+    codes: [
+      { naam: "Stage student AM/MBOV etc.", vu: "Stage", amc: "Stage", tijdVU: "7:30–16:00", tijdAMC: "7:30–16:00" },
+      { naam: "Vrije Dag", vu: "RV", amc: "RV", tijdVU: "—", tijdAMC: "—" },
+      { naam: "Buitenland", vu: "Bui", amc: "Bui", tijdVU: "7:30–16:00", tijdAMC: "7:30–16:00" },
+    ],
+  },
+  {
+    naam: "Cursus & overig",
+    kleur: "#7F8C8D",
+    codes: [
+      { naam: "Cursus algemeen", vu: "BCU(9)", amc: "MCU(9)", tijdVU: "8:00–17:30", tijdAMC: "8:00–17:30" },
+      { naam: "ALS cursus", vu: "BALS", amc: "MALS", tijdVU: "7:15–16:45", tijdAMC: "7:30–17:00" },
+      { naam: "Cardiocursus", vu: "—", amc: "MCC", tijdVU: "—", tijdAMC: "7:30–17:00" },
+      { naam: "BHV 4,5 uur", vu: "BHV4,5", amc: "BHV4,5", tijdVU: "8:30–13:00", tijdAMC: "8:30–13:00" },
+      { naam: "BHV", vu: "BHV", amc: "BHV", tijdVU: "8:30–17:00", tijdAMC: "8:30–17:00" },
+      { naam: "PBLS (instructeur)", vu: "PBLS", amc: "PBLS", tijdVU: "7:30–17:00", tijdAMC: "7:30–17:00" },
+    ],
+  },
+];
+
+const ROOSTER_STUDENT = [
+  { naam: "Dagdienst student", vu: "Bc", amc: "Mc", tijdVU: "7:15–16:45", tijdAMC: "7:30–17:00" },
+  { naam: "Leerling dubbel staan", vu: "Bcd", amc: "Mcd", tijdVU: "7:15–16:45", tijdAMC: "7:30–17:00" },
+  { naam: "Leerling zelfstandig", vu: "Bcz", amc: "Mcz", tijdVU: "7:15–16:45", tijdAMC: "7:30–17:00" },
+  { naam: "Tussendienst student", vu: "BTc", amc: "MTc", tijdVU: "9:30–19:00", tijdAMC: "9:00–18:30" },
+  { naam: "Middagdienst student", vu: "BMc", amc: "MMc", tijdVU: "12:00–21:30", tijdAMC: "12:00–21:30" },
+  { naam: "Avonddienst student", vu: "BAc", amc: "MAc", tijdVU: "13:30–23:00", tijdAMC: "13:30–23:00" },
+  { naam: "Nachtdienst student", vu: "BNc", amc: "MNc", tijdVU: "22:30–8:00", tijdAMC: "22:30–8:00" },
+  { naam: "Simulatie dagdienst studenten", vu: "BSIMs", amc: "MSIMs", tijdVU: "7:30–17:00", tijdAMC: "7:30–17:00" },
+  { naam: "Stage Periferie", vu: "Per", amc: "Per", tijdVU: "7:30–16:00", tijdAMC: "7:30–16:00" },
+  { naam: "School", vu: "AA7,2", amc: "AA7,2", tijdVU: "8:00–15:42", tijdAMC: "8:00–15:42" },
+  { naam: "School", vu: "AA9", amc: "AA9", tijdVU: "7:30–17:00", tijdAMC: "7:30–17:00" },
+];
+
+const DIENST_TOESLAGEN = [
+  { code: "TO47", uitleg: "Onregelmatigheidsdienst — toeslag 47%" },
+  { code: "TO72", uitleg: "Onregelmatigheidsdienst — toeslag 72% (zon- en feestdagen)" },
+  { code: "TO00", uitleg: "Uren waarover geen ORT berekend wordt" },
+  { code: "AMV", uitleg: "Aanwezigheidsdienst (slaap) — ma t/m vr" },
+  { code: "AWF", uitleg: "Aanwezigheidsdienst (slaap) — weekend & feestdagen" },
+  { code: "BMV", uitleg: "Bereikbaarheidsdienst — ma t/m vr" },
+  { code: "BWF", uitleg: "Bereikbaarheidsdienst — weekend & feestdagen" },
+  { code: "CMV", uitleg: "Consignatiedienst — ma t/m vr" },
+  { code: "CWF", uitleg: "Consignatiedienst — weekend & feestdagen" },
+  { code: "BA00", uitleg: "Uurtarief bij activiteit 'Werk tijdens BD/AD/CD-geld'" },
+  { code: "VAKU", uitleg: "Opgenomen vakantie-uren" },
+  { code: "BALV", uitleg: "Opgenomen balansverlof" },
+  { code: "BVMV", uitleg: "Betaald bijzonder verlof / mantelzorgverlof" },
+  { code: "CVD", uitleg: "Verschoven diensten" },
+  { code: "SV", uitleg: "Werkdagen flexmedewerkers" },
+];
 
 const SALTMOVIES = [
   { letter: "S", item: "Suction", uitleg: "Zuigapparaat aanwezig en werkend? Yankauer aangesloten en bereikbaar." },
@@ -1068,17 +1268,76 @@ const KINDER_VOCHT = [
   { item: "Glucose pomp", waarde: "2–8 mg/kg/min" },
 ];
 
+// Checklist kinderanesthesie — AUMC, locatie AMC
+const KINDER_CHECKLIST = [
+  {
+    sectie: "Warmte",
+    kleur: "#E67E22",
+    items: [
+      { item: "OK opwarmen", tekst: "Uur van tevoren opwarmen: neonaat 27 °C, anders 24 °C. OK 7 en 8 max 25 °C (problemen met röntgenbuis-calibratie)." },
+      { item: "Bairhugger", tekst: "<3 mnd neomatras · >3 mnd underbody (géén lowerbody)." },
+      { item: "Warmtelamp", tekst: "Bij kinderen <1 jaar. Patiënt niet hoger dan de rode knop, sterkte max. 10 W." },
+      { item: "Enflow of Fluido", tekst: "Bij mogelijk veel volume- of bloedverlies. <6 jaar: Enflow met cassette + verlengslang. >6 jaar: Fluido." },
+      { item: "Kind afdekken", tekst: "Zo lang mogelijk, ook postoperatief. Gebruik kindermutsjes (magazijn bij de bairhuggers)." },
+      { item: "Tempsonde", tekst: "9 Fr sonde." },
+    ],
+  },
+  {
+    sectie: "Toestel en monitor",
+    kleur: "#3498DB",
+    items: [
+      { item: "Ventilatieslangen", tekst: "≤10 kg: neo-slangen — controleer of slangen lang genoeg zijn om patiënt te bereiken (m.n. buitenlocaties). Filters (volwassen) direct aan expiratie- én inspiratiekant van toestel; géén filter bij patiënt, alleen HumidVent voor tube 3 en 3,5. >10 kg: volwassen slangen, evt. kleine ballon <25 kg." },
+      { item: "Filter", tekst: "<4 kg: HumidVent op orale tube 3 en 3,5 = GEEN bacteriefilter, dus daarna slangen vervangen. 4–8 kg: evt. groene filter. >8 kg: kinderfilter (blauw)." },
+      { item: "Spirometrie", tekst: "<25 kg (5 jaar): Pedi-lite. >25 kg (vanaf TV 150 ml): volwassen D-lite." },
+      { item: "Instellingen", tekst: "Spirometrie op beademingstoestel: pediatric, of <1 jaar: neonaat. Monitor op kind of baby." },
+      { item: "Zuig", tekst: "Smalle flexibele zuigslang (kinderkar) of kleine yankauer uit chirurgiekar." },
+      { item: "NMT", tekst: "NMT werkt niet in baby/kind-profiel — evt. volwassen profiel voor meting." },
+      { item: "Ambuballon", tekst: "Controleer of kinderambuballon (uit verpakking, in elkaar gezet) binnen handbereik ligt." },
+    ],
+  },
+  {
+    sectie: "Materialen",
+    kleur: "#16A085",
+    items: [
+      { item: "Tube", tekst: "Tubemaat: leeftijd/4 + 4. Maat groter én kleiner op OK." },
+      { item: "Guedel", tekst: "Meet kaakkopje → mondhoek (ook lengte laryngoscoopblad)." },
+      { item: "Bloeddrukband", tekst: "Verschillende maten (rood, lichtblauw, groen) aanwezig. Voor neonaten maat #1 t/m 4 met speciale drukslang (kinderkar, 2e la)." },
+      { item: "Pompen", tekst: "Twee volumetrische pompen + twee spuitpompen op OK voor Sterofundin en Glucose 10%." },
+      { item: "MLK", tekst: "MLK bij verwachte moeilijke luchtweg en kinderbroncho­scoop. Scoop na afloop direct ter reiniging aanbieden — barcode in 'vuile sluis' scannen. Plastic hoes met groene smiley omgekeerd zodat rode smiley zichtbaar is. Met spoed steriliseren en retourneren. Tel. Synergy: 62910." },
+      { item: "Echo", tekst: "Bij echogeleide regionale techniek, CVL of infuus/arterielijn: 'hockey-stick' probe (Turbo of Edge)." },
+    ],
+  },
+  {
+    sectie: "Medicatie",
+    kleur: "#F5C518",
+    items: [
+      { item: "Dosering", tekst: "Afhankelijk van gewicht (indicatie: 2,5 × leeftijd + 8) bepaal je het spuitvolume. Gebruik kleine spuiten (zo nodig mantoux), géén verdunningen van medicatie. Andere concentratie van standaardmedicatie alleen in overleg én dubbelcheck met anesthesioloog." },
+      { item: "Vocht", tekst: "Gebruik volumetrische pomp of spuitpomp bij vochttoediening. Denk aan Glucose 10% bij kinderen <1 jaar (i.o. anesthesioloog). Glucose 10% in zijvakje van de kinderkar." },
+    ],
+  },
+  {
+    sectie: "Beleid",
+    kleur: "#9B59B6",
+    items: [
+      { item: "Pre-OK overleg", tekst: "Overleg pre-OK plan van aanpak en benodigde materialen met anesthesioloog, zodat je niet meer van de OK af hoeft." },
+      { item: "Dagcentrum", tekst: "Op dagcentrum is minder materiaal beschikbaar en zijn weinig volumetrische pompen aanwezig — zorg pre-OK voor genoeg spullen." },
+      { item: "Continue aanwezigheid <1 jaar", tekst: "Bij kinderen <1 jaar verlaten anesthesiemedewerker én kinderanesthesioloog de kamer zo weinig mogelijk. Tijdens kritische momenten zijn beiden verplicht aanwezig — desnoods laat de rest van het team wachten." },
+      { item: "Zie ook", tekst: "Protocol neonaten en zuigelingen / Pediatric Emergency Manual (op kinderkar voor spoedsituaties)." },
+    ],
+  },
+];
+
 const LEIDINGGEVENDEN = [
-  { rol: "Hoofd anesthesiemedewerkers", naam: "Marieke Lijnsvelt", tel: "06-19548724", intern: "29021 (AMC)", email: "m.lijnsvelt@amsterdamumc.nl" },
-  { rol: "Teamleider AMC", naam: "Hanane el Moutaouakkil", tel: "06-50075240", intern: "27167", email: "h.elmoutaouakkil@amsterdamumc.nl" },
-  { rol: "Teamleider AMC", naam: "Leendert Runia", tel: "06-82713053", intern: "29820", email: "l.runia@amsterdamumc.nl" },
-  { rol: "Teamleider AMC", naam: "Lisette Liewes", tel: "06-50075282", intern: "29014", email: "e.s.liewes@amsterdamumc.nl" },
-  { rol: "Teamleider VUmc", naam: "Michael van Tongeren", tel: "06-25716129", intern: "51381", email: "m.vantongeren@amsterdamumc.nl" },
-  { rol: "Teamleider VUmc", naam: "Esther Roubos", tel: "06-50087727", intern: "35752", email: "e.c.roubos@amsterdamumc.nl" },
-  { rol: "Praktijkopleider AMC", naam: "Lenneke Muusers", tel: "06-27916715", intern: "23047", email: "l.muusers@amsterdamumc.nl" },
-  { rol: "Praktijkopleider AMC", naam: "Annemiek Koree-Huiskes", tel: "06-86559944", intern: "25835", email: "a.huiskes@amsterdamumc.nl" },
-  { rol: "Praktijkopleider VUmc", naam: "Trix Verweij", tel: "06-25337534", intern: "—", email: "b.verweij@amsterdamumc.nl" },
-  { rol: "Praktijkopleider VUmc", naam: "Mariëlle Bor", tel: "—", intern: "36851", email: "m.bor@amsterdamumc.nl" },
+  { rol: "Hoofd anesthesiemedewerkers AUMC (locatie AMC & VU)", naam: "Marieke Lijnsvelt", tel: "06-19548724", intern: "29021", email: "m.lijnsvelt@amsterdamumc.nl" },
+  { rol: "Teamleider AUMC, locatie AMC", naam: "Hanane el Moutaouakkil", tel: "06-50075240", intern: "27167", email: "h.elmoutaouakkil@amsterdamumc.nl" },
+  { rol: "Teamleider AUMC, locatie AMC", naam: "Leendert Runia", tel: "06-82713053", intern: "29820", email: "l.runia@amsterdamumc.nl" },
+  { rol: "Teamleider AUMC, locatie AMC", naam: "Lisette Liewes", tel: "06-50075282", intern: "29014", email: "e.s.liewes@amsterdamumc.nl" },
+  { rol: "Teamleider AUMC, locatie VU", naam: "Michael van Tongeren", tel: "06-25716129", intern: "51381", email: "m.vantongeren@amsterdamumc.nl" },
+  { rol: "Teamleider AUMC, locatie VU", naam: "Esther Roubos", tel: "06-50087727", intern: "35752", email: "e.c.roubos@amsterdamumc.nl" },
+  { rol: "Praktijkopleider AUMC, locatie AMC", naam: "Lenneke Muusers", tel: "06-27916715", intern: "23047", email: "l.muusers@amsterdamumc.nl" },
+  { rol: "Praktijkopleider AUMC, locatie AMC", naam: "Annemiek Koree-Huiskes", tel: "06-86559944", intern: "25835", email: "a.huiskes@amsterdamumc.nl" },
+  { rol: "Praktijkopleider AUMC, locatie VU", naam: "Trix Verweij", tel: "06-25337534", intern: "—", email: "b.verweij@amsterdamumc.nl" },
+  { rol: "Praktijkopleider AUMC, locatie VU", naam: "Mariëlle Bor", tel: "—", intern: "36851", email: "m.bor@amsterdamumc.nl" },
 ];
 
 const VEILIGHEIDSAFSPRAKEN = [
@@ -1150,22 +1409,22 @@ const EPA_TIJDSCHEMA = [
 
 const NOODKNOP_INFO = [
   {
-    locatie: "Klinische OK (AMC)",
+    locatie: "Klinische OK (AUMC, locatie AMC)",
     tekst: "Aan de rechterkant bij binnenkomst via wasruimte, rechts bovenaan het knoppenpaneel: rode NOODKNOP.",
   },
   {
-    locatie: "Dagcentrum (AMC)",
+    locatie: "Dagcentrum (AUMC, locatie AMC)",
     tekst: "Op de pendel waar je het licht kunt bedienen: NOODKNOP (oproep crashteam).",
   },
   {
-    locatie: "VUmc",
+    locatie: "AUMC, locatie VU",
     tekst: "Intercomsysteem op de OK voor spoedoproep. Vraag bij start werken hoe deze werkt.",
   },
 ];
 
 const MLK_INFO = [
-  { locatie: "AMC", tekst: "Begin van iedere gang. Bevat o.a. glidescope. Schrijf op whiteboard waar je de MLK naartoe neemt!" },
-  { locatie: "VUmc", tekst: "Naast workshop 2e etage, 6A49 workshop 6A, apparatuurruimte 6D164." },
+  { locatie: "AUMC, locatie AMC", tekst: "Begin van iedere gang. Bevat o.a. glidescope. Schrijf op whiteboard waar je de MLK naartoe neemt!" },
+  { locatie: "AUMC, locatie VU", tekst: "Naast workshop 2e etage, 6A49 workshop 6A, apparatuurruimte 6D164." },
 ];
 
 const ALS_REVERSIBEL_KORT = [
@@ -1682,12 +1941,20 @@ const Icons = {
       <line x1="9" y1="8" x2="15" y2="8"/>
     </svg>
   ),
+  calendar: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2"/>
+      <line x1="16" y1="2" x2="16" y2="6"/>
+      <line x1="8" y1="2" x2="8" y2="6"/>
+      <line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+  ),
 };
 
 const SECTIONS = [
   { id: "nood", label: "Nood", icon: Icons.alert, color: "#E74C3C" },
-  { id: "tel-amc", label: "Tel AMC", icon: Icons.phone, color: "#2980B9" },
-  { id: "tel-vumc", label: "Tel VUmc", icon: Icons.phone, color: "#8E44AD" },
+  { id: "tel-amc", label: "AUMC, locatie AMC", icon: Icons.phone, color: "#2980B9" },
+  { id: "tel-vumc", label: "AUMC, locatie VU", icon: Icons.phone, color: "#8E44AD" },
   { id: "ok", label: "OK's", icon: Icons.map, color: "#16A085" },
   { id: "abcde", label: "ABCDE", icon: Icons.heart, color: "#E74C3C" },
   { id: "medicatie", label: "Medicatie", icon: Icons.pill, color: "#E67E22" },
@@ -1706,6 +1973,7 @@ const SECTIONS = [
   { id: "plattegrond", label: "Plattegrond", icon: Icons.map, color: "#16A085" },
   { id: "buizen", label: "Buizen", icon: Icons.tube, color: "#E74C3C" },
   { id: "ecg", label: "ECG", icon: Icons.heart, color: "#E74C3C" },
+  { id: "rooster", label: "Rooster", icon: Icons.calendar, color: "#9B59B6" },
 ];
 
 // ============================================================
@@ -1737,7 +2005,7 @@ function ZakkaartApp() {
     } catch { return { theme: "auto", fontSize: "normal", defaultLocatie: "amc", accentKleur: "#2ECC71", taal: "nl" }; }
   });
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const isDark = settings.theme === "dark" || (settings.theme === "auto" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  const isDark = true; // Forceer altijd dark theme (settings-panel verwijderd)
   const zoomMap = { small: 0.88, normal: 1.0, large: 1.13 };
   const t = (nl, en) => settings.taal === "en" ? en : nl;
   const [leidingOpen, setLeidingOpen] = useState(false);
@@ -2118,7 +2386,7 @@ function ZakkaartApp() {
         {data.dienstAnes.map((p, i) => <PhoneRow key={i} {...p} />)}
       </Collapse>
       <Collapse title={`Diensten ${label}`} color="#3498DB">
-        {(label === "AMC" ? DIENSTEN_AMC : DIENSTEN_VUMC).map((d, i) => (
+        {(label.includes("locatie AMC") ? DIENSTEN_AMC : DIENSTEN_VUMC).map((d, i) => (
           <div key={i} style={{
             display: "flex",
             justifyContent: "space-between",
@@ -2189,7 +2457,7 @@ function ZakkaartApp() {
         </div>
       </Collapse>
 
-      <Collapse title="OK's per specialisme — AMC" color="#16A085">
+      <Collapse title="OK's per specialisme — AUMC, locatie AMC" color="#16A085">
         {OK_SPECIALISMEN.map((item, i) => (
           <div key={i} style={{
             display: "flex",
@@ -2357,7 +2625,18 @@ function ZakkaartApp() {
         <div style={{ overflowX: "auto" }}>
           <TableRow cells={["Medicament", "Inductie", "Onderhoud"]} header />
           {MEDICATIE_STANDAARD.map((m, i) => (
-            <TableRow key={i} cells={[m.med, m.inductie, m.onderhoud]} accentKleur={getMedKleur(m.med)?.bg} />
+            <TableRow key={i} cells={[
+              <div>
+                <div>{m.med}</div>
+                {m.concentratie && (
+                  <div style={{ fontSize: "10px", color: "#888", fontWeight: 400, marginTop: "2px", lineHeight: 1.3 }}>
+                    {m.concentratie}
+                  </div>
+                )}
+              </div>,
+              m.inductie,
+              m.onderhoud
+            ]} accentKleur={getMedKleur(m.med)?.bg} />
           ))}
         </div>
       </Collapse>
@@ -2407,7 +2686,7 @@ function ZakkaartApp() {
             );
           })}
           <div style={{ fontSize: "10px", color: "#444", marginTop: "10px", textAlign: "right" }}>
-            Bron: T.M.S. van Winden, 2016 — AMC
+            Bron: T.M.S. van Winden, 2016 — AUMC, locatie AMC
           </div>
         </Collapse>
       ))}
@@ -2514,14 +2793,183 @@ function ZakkaartApp() {
           </div>
         ))}
       </Collapse>
+
+      {/* ROTEM — Stollingsdiagnostiek */}
+      <Collapse title="ROTEM — AUMC stollingsprotocol" color="#9B59B6">
+        <div style={{
+          background: "linear-gradient(135deg, rgba(155,89,182,0.08) 0%, rgba(155,89,182,0.02) 100%)",
+          border: "1px solid rgba(155,89,182,0.2)",
+          borderRadius: "10px",
+          padding: "10px 12px",
+          marginBottom: "14px",
+          fontSize: "12px",
+          color: "#ccc",
+          lineHeight: 1.5,
+        }}>
+          ⚠ <strong style={{ color: "#9B59B6" }}>Corrigeer alleen de stolling als er sprake is van een bloeding.</strong> ROTEM kan niet voorspellen óf het gaat bloeden, alleen laten zien <em>waarom</em> het bloedt.
+        </div>
+
+        {ROTEM_PROTOCOL.map((stap, i) => (
+          <div key={i} style={{
+            background: `${stap.kleur}12`,
+            border: `1px solid ${stap.kleur}40`,
+            borderLeft: `4px solid ${stap.kleur}`,
+            borderRadius: "10px",
+            padding: "12px",
+            marginBottom: "10px",
+          }}>
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginBottom: "10px",
+            }}>
+              <div style={{
+                background: stap.kleur,
+                color: "#fff",
+                width: "26px",
+                height: "26px",
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: 700,
+                fontSize: "13px",
+                flexShrink: 0,
+              }}>{i + 1}</div>
+              <div style={{ fontWeight: 700, color: stap.kleur, fontSize: "14px" }}>{stap.titel}</div>
+            </div>
+            {stap.triggers.map((trig, ti) => (
+              <div key={ti} style={{
+                display: "grid",
+                gridTemplateColumns: "1fr auto 1fr",
+                gap: "8px",
+                alignItems: "center",
+                padding: "8px 0",
+                borderTop: ti > 0 ? "1px solid rgba(255,255,255,0.05)" : "none",
+              }}>
+                <div style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "12px",
+                  color: "#fff",
+                  background: "rgba(0,0,0,0.25)",
+                  padding: "6px 8px",
+                  borderRadius: "6px",
+                  lineHeight: 1.4,
+                }} dangerouslySetInnerHTML={{ __html: trig.criterium }} />
+                <div style={{ color: stap.kleur, fontSize: "16px", textAlign: "center" }}>→</div>
+                <div style={{
+                  fontWeight: 700,
+                  fontSize: "12px",
+                  color: stap.kleur,
+                  background: `${stap.kleur}25`,
+                  padding: "6px 8px",
+                  borderRadius: "6px",
+                  textAlign: "center",
+                  lineHeight: 1.4,
+                }}>{trig.actie}</div>
+              </div>
+            ))}
+          </div>
+        ))}
+
+        <div style={{ fontSize: "10px", color: "#666", marginTop: "10px", textAlign: "right" }}>
+          Bron: AUMC stollingsprotocol — ROTEM sigma
+        </div>
+      </Collapse>
+
+      <Collapse title="ROTEM — Parameter uitleg" color="#9B59B6">
+        {ROTEM_PARAMETERS.map((cat, ci) => (
+          <div key={ci} style={{ marginBottom: ci < ROTEM_PARAMETERS.length - 1 ? "16px" : 0 }}>
+            <div style={{
+              fontSize: "11px",
+              textTransform: "uppercase",
+              letterSpacing: "1.5px",
+              color: cat.kleur,
+              fontWeight: 700,
+              marginBottom: "8px",
+              paddingBottom: "4px",
+              borderBottom: `1px solid ${cat.kleur}33`,
+            }}>{cat.groep}</div>
+            {cat.params.map((p, i) => (
+              <div key={i} style={{
+                padding: "8px 0 8px 10px",
+                borderLeft: `3px solid ${cat.kleur}`,
+                marginBottom: "4px",
+                background: i % 2 === 0 ? "rgba(255,255,255,0.02)" : "transparent",
+                borderRadius: "0 6px 6px 0",
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "2px" }}>
+                  <div>
+                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, color: cat.kleur, fontSize: "13px" }}>{p.acroniem}</span>
+                    <span style={{ color: "#ccc", fontSize: "13px", marginLeft: "8px" }}>{p.naam}</span>
+                  </div>
+                  <span style={{ fontSize: "10px", color: "#666", fontFamily: "'JetBrains Mono', monospace" }}>{p.unit}</span>
+                </div>
+                <div style={{ fontSize: "11px", color: "#999", lineHeight: 1.4 }}>{p.beschrijving}</div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </Collapse>
+
+      <Collapse title="ROTEM — Tests in 1 oogopslag" color="#9B59B6">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+          {ROTEM_TESTS.map((t, i) => (
+            <div key={i} style={{
+              background: `${t.kleur}10`,
+              border: `1px solid ${t.kleur}30`,
+              borderLeft: `4px solid ${t.kleur}`,
+              borderRadius: "8px",
+              padding: "10px",
+            }}>
+              <div style={{ fontWeight: 700, color: t.kleur, fontSize: "13px", marginBottom: "4px" }}>{t.naam}</div>
+              <div style={{ fontSize: "11px", color: "#bbb", lineHeight: 1.4 }}>{t.uitleg}</div>
+            </div>
+          ))}
+        </div>
+      </Collapse>
     </div>
   );
 
   const renderKinder = () => (
     <div>
+      <Collapse title="Checklist kinderanesthesie" color="#E67E22">
+        <div style={{ fontSize: "11px", color: "#666", marginBottom: "10px", lineHeight: 1.5 }}>
+          Standaardchecklist AUMC, locatie AMC — loop deze door vóór elke kinder-OK.
+        </div>
+        {KINDER_CHECKLIST.map((sec, si) => (
+          <div key={si} style={{ marginBottom: si < KINDER_CHECKLIST.length - 1 ? "14px" : 0 }}>
+            <div style={{
+              fontSize: "11px",
+              textTransform: "uppercase",
+              letterSpacing: "1.5px",
+              color: sec.kleur,
+              fontWeight: 700,
+              marginBottom: "6px",
+              paddingBottom: "4px",
+              borderBottom: `1px solid ${sec.kleur}33`,
+            }}>{sec.sectie}</div>
+            {sec.items.map((it, i) => (
+              <div key={i} style={{
+                padding: "8px 0 8px 10px",
+                borderLeft: `3px solid ${sec.kleur}`,
+                borderBottom: i < sec.items.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                marginBottom: "2px",
+              }}>
+                <div style={{ fontWeight: 700, color: "#fff", fontSize: "13px", marginBottom: "2px" }}>{it.item}</div>
+                <div style={{ fontSize: "12px", color: "#bbb", lineHeight: 1.5 }}>{it.tekst}</div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </Collapse>
       <Collapse title="Temperatuur" color="#F39C12">
         <div style={{ fontSize: "14px", color: "#ccc", lineHeight: 1.6 }}>
-          Neonaat: <strong style={{ color: "#F39C12" }}>24°C</strong> — Anders: <strong style={{ color: "#F39C12" }}>21°C</strong>
+          Neonaat: <strong style={{ color: "#F39C12" }}>27°C</strong> — Anders: <strong style={{ color: "#F39C12" }}>24°C</strong>
+        </div>
+        <div style={{ fontSize: "12px", color: "#E67E22", marginTop: "6px", fontStyle: "italic" }}>
+          ⚠ OK 7 en 8: max 25°C (i.v.m. röntgenbuis-calibratie)
         </div>
         <div style={{ fontSize: "13px", color: "#aaa", marginTop: "8px" }}>
           {"<"}10 kg: Neoslangen · {">"}10 kg: Volwassenslangen (evt. kleine 1L ballon)
@@ -3337,32 +3785,73 @@ function ZakkaartApp() {
         )}
 
         {/* Vochtbeleid */}
-        {calcWeight && (
-          <Collapse title="Vochtbeleid" color="#3498DB">
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-              {[
-                { label: "Onderhoud 1e ½ uur", waarde: `${(calcWeight * 10).toFixed(0)} ml`, sub: "10 ml/kg" },
-                { label: "Vochtbolus", waarde: `${(calcWeight * 10).toFixed(0)}–${(calcWeight * 20).toFixed(0)} ml`, sub: "10–20 ml/kg" },
-              ].map((item, i) => (
-                <div key={i} style={{
-                  background: "rgba(52,152,219,0.08)",
-                  borderRadius: "10px",
-                  padding: "12px",
-                  border: "1px solid rgba(52,152,219,0.15)",
-                }}>
-                  <div style={{
-                    fontSize: "18px",
-                    fontWeight: 700,
-                    fontFamily: "'JetBrains Mono', monospace",
-                    color: "#3498DB",
-                  }}>{item.waarde}</div>
-                  <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", color: "#888", marginTop: "4px" }}>{item.label}</div>
-                  <div style={{ fontSize: "10px", color: "#555", marginTop: "2px" }}>{item.sub}</div>
+        {calcWeight && (() => {
+          // 4-2-1 regel (Holliday-Segar) onderhoudsvocht in ml/uur
+          const w = calcWeight;
+          let mlPerUur;
+          let breakdown;
+          if (w <= 10) {
+            mlPerUur = 4 * w;
+            breakdown = `4 × ${w} kg`;
+          } else if (w <= 20) {
+            mlPerUur = 40 + 2 * (w - 10);
+            breakdown = `40 + 2 × ${(w - 10).toFixed(w % 1 ? 1 : 0)} kg`;
+          } else {
+            mlPerUur = 60 + 1 * (w - 20);
+            breakdown = `60 + 1 × ${(w - 20).toFixed(w % 1 ? 1 : 0)} kg`;
+          }
+          const mlPerUurStr = mlPerUur < 10 ? mlPerUur.toFixed(1) : mlPerUur.toFixed(0);
+          return (
+            <Collapse title="Vochtbeleid" color="#3498DB">
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "10px" }}>
+                {[
+                  { label: "Onderhoud 1e ½ uur", waarde: `${(w * 10).toFixed(0)} ml`, sub: "10 ml/kg" },
+                  { label: "Vochtbolus", waarde: `${(w * 10).toFixed(0)}–${(w * 20).toFixed(0)} ml`, sub: "10–20 ml/kg" },
+                ].map((item, i) => (
+                  <div key={i} style={{
+                    background: "rgba(52,152,219,0.08)",
+                    borderRadius: "10px",
+                    padding: "12px",
+                    border: "1px solid rgba(52,152,219,0.15)",
+                  }}>
+                    <div style={{
+                      fontSize: "18px",
+                      fontWeight: 700,
+                      fontFamily: "'JetBrains Mono', monospace",
+                      color: "#3498DB",
+                    }}>{item.waarde}</div>
+                    <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", color: "#888", marginTop: "4px" }}>{item.label}</div>
+                    <div style={{ fontSize: "10px", color: "#555", marginTop: "2px" }}>{item.sub}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* 4-2-1 regel onderhoudsvocht */}
+              <div style={{
+                background: "rgba(52,152,219,0.10)",
+                borderRadius: "10px",
+                padding: "12px",
+                border: "1px solid rgba(52,152,219,0.20)",
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "6px" }}>
+                  <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "1px", color: "#3498DB", fontWeight: 700 }}>
+                    4-2-1 onderhoud
+                  </div>
+                  <div>
+                    <span style={{ fontSize: "22px", fontWeight: 700, fontFamily: "'JetBrains Mono', monospace", color: "#3498DB" }}>{mlPerUurStr}</span>
+                    <span style={{ fontSize: "12px", color: "#888", marginLeft: "4px" }}>ml/uur</span>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </Collapse>
-        )}
+                <div style={{ fontSize: "11px", color: "#888", fontFamily: "'JetBrains Mono', monospace" }}>
+                  = {breakdown}
+                </div>
+                <div style={{ fontSize: "10px", color: "#666", marginTop: "8px", lineHeight: 1.5 }}>
+                  4 ml/kg/u (0–10 kg) · +2 ml/kg/u (10–20 kg) · +1 ml/kg/u (&gt;20 kg)
+                </div>
+              </div>
+            </Collapse>
+          );
+        })()}
 
         {/* Medicatiedoseringen */}
         {calcWeight ? (
@@ -3377,6 +3866,12 @@ function ZakkaartApp() {
                 }
                 const dosisStr = dosis < 1 ? dosis.toFixed(2) : dosis < 10 ? dosis.toFixed(1) : dosis.toFixed(0);
                 const medKleur = getMedKleur(m.med);
+                // AUMC protocol: <3 jaar Propofol 1% (10 mg/ml), ≥3 jaar Propofol 2% (20 mg/ml)
+                const isPropofol = m.med.includes("Propofol");
+                const propConc = isPropofol && hasAge ? (age < 3 ? 10 : 20) : null;
+                const propPct = propConc === 10 ? "1%" : propConc === 20 ? "2%" : null;
+                const propMl = propConc ? dosis / propConc : null;
+                const propMlStr = propMl != null ? (propMl < 1 ? propMl.toFixed(2) : propMl < 10 ? propMl.toFixed(1) : propMl.toFixed(0)) : null;
                 return (
                   <div key={i} style={{
                     display: "flex",
@@ -3388,8 +3883,27 @@ function ZakkaartApp() {
                     gap: "8px",
                   }}>
                     <div>
-                      <div style={{ fontWeight: 600, color: "#fff", fontSize: "14px" }}>{m.med}</div>
-                      <div style={{ fontSize: "11px", color: "#666", marginTop: "2px" }}>{m.range}</div>
+                      <div style={{ fontWeight: 600, color: "#fff", fontSize: "14px" }}>
+                        {m.med}
+                        {propPct && (
+                          <span style={{
+                            marginLeft: "6px",
+                            fontSize: "10px",
+                            fontWeight: 700,
+                            padding: "2px 6px",
+                            borderRadius: "6px",
+                            background: age < 3 ? "rgba(245,197,24,0.18)" : "rgba(245,197,24,0.32)",
+                            color: "#F5C518",
+                            letterSpacing: "0.5px",
+                          }}>{propPct}</span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: "11px", color: "#666", marginTop: "2px" }}>
+                        {m.range}
+                        {propPct && (
+                          <span style={{ color: "#888", marginLeft: "4px" }}>· {age < 3 ? "<3 jr → 1%" : "≥3 jr → 2%"}</span>
+                        )}
+                      </div>
                     </div>
                     <div style={{
                       background: cat === "Noodmedicatie" ? "rgba(231,76,60,0.12)" : "rgba(46,204,113,0.1)",
@@ -3406,6 +3920,11 @@ function ZakkaartApp() {
                         color: cat === "Noodmedicatie" ? "#E74C3C" : "#2ECC71",
                       }}>{dosisStr}</span>
                       <span style={{ fontSize: "11px", color: "#888", marginLeft: "3px" }}>{m.unit}</span>
+                      {propMlStr && (
+                        <div style={{ fontSize: "11px", color: "#F5C518", fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, marginTop: "2px" }}>
+                          {propMlStr} <span style={{ fontSize: "10px", color: "#888", fontWeight: 400 }}>ml{m.perUur ? "/uur" : ""}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -3585,8 +4104,8 @@ function ZakkaartApp() {
 
   const renderPlattegrond = () => {
     const tabs = [
-      { id: "amc", label: "AMC" },
-      { id: "vumc", label: "VUmc" },
+      { id: "amc", label: "AUMC, locatie AMC" },
+      { id: "vumc", label: "AUMC, locatie VU" },
     ];
 
     const ImageCard = ({ src, alt, beschrijving }) => (
@@ -3720,15 +4239,15 @@ function ZakkaartApp() {
           <>
             <ImageCard
               src={IMG_AMC_CAMPUS}
-              alt="AMC campus overzicht"
+              alt="AUMC, locatie AMC campus overzicht"
               beschrijving="Campus overzicht — bouwdelen A t/m M, Q"
             />
             <ImageCard
               src={IMG_AMC_PLATTEGROND}
-              alt="AMC plattegrond begane grond"
+              alt="AUMC, locatie AMC plattegrond begane grond"
               beschrijving="Begane grond — poliklinieken, routes, voorzieningen"
             />
-            <Collapse title="Codering AMC" color="#16A085">
+            <Collapse title="Codering AUMC, locatie AMC" color="#16A085">
               <div style={{ fontSize: "13px", color: "#ccc", lineHeight: 1.7 }}>
                 Alle ruimten worden aangeduid als <strong style={{ color: "#16A085", fontFamily: "'JetBrains Mono', monospace" }}>H8-314</strong> = bouwdeel H, 8e verdieping, kamer 314.
               </div>
@@ -3737,7 +4256,7 @@ function ZakkaartApp() {
                 Dagcentrum: bouwdeel D. OK-complex: boven bouwdeel C/D.
               </div>
             </Collapse>
-            <Collapse title="Ingangen AMC" color="#16A085">
+            <Collapse title="Ingangen AUMC, locatie AMC" color="#16A085">
               {[
                 { nr: "1", naam: "Hoofdingang", locatie: "Meibergdreef (bij P1)" },
                 { nr: "2", naam: "Ingang Oost", locatie: "Faculteit (bij P4)" },
@@ -3789,15 +4308,15 @@ function ZakkaartApp() {
           <>
             <ImageCard
               src={IMG_VUMC_CAMPUS}
-              alt="VUmc campus overzicht"
+              alt="AUMC, locatie VU campus overzicht"
               beschrijving="Campus overzicht — bouwdelen A t/m Z, ACTA, Imaging Center"
             />
-            <Collapse title="Ingangen VUmc" color="#16A085">
+            <Collapse title="Ingangen AUMC, locatie VU" color="#16A085">
               {[
                 { nr: "1", naam: "Ingang Ziekenhuis", locatie: "De Boelelaan 1117 + UHP" },
                 { nr: "2", naam: "Ingang Poliklinieken", locatie: "De Boelelaan 1118" },
                 { nr: "3", naam: "Ingang P1", locatie: "Vanuit parkeergarage" },
-                { nr: "4", naam: "Gastenverblijf", locatie: "VUmc" },
+                { nr: "4", naam: "Gastenverblijf", locatie: "AUMC, locatie VU" },
                 { nr: "5", naam: "SSO", locatie: "Specialistische Spoed Opvang" },
                 { nr: "6", naam: "GGZ inGeest", locatie: "" },
                 { nr: "7", naam: "IVF-centrum", locatie: "" },
@@ -3823,7 +4342,7 @@ function ZakkaartApp() {
                 </div>
               ))}
             </Collapse>
-            <Collapse title="Gebouwen VUmc" color="#16A085">
+            <Collapse title="Gebouwen AUMC, locatie VU" color="#16A085">
               <div style={{ fontSize: "13px", color: "#ccc", lineHeight: 1.7 }}>
                 Ziekenhuisgebouw en polikliniekgebouw zijn verbonden door een brug. OK's: 6e etage (6A). Dagcentrum OK's: 2e etage.
               </div>
@@ -3834,11 +4353,411 @@ function ZakkaartApp() {
     );
   };
 
+  const renderRooster = () => (
+    <div>
+      {/* Snelle toegang */}
+      <Collapse title="Snelle toegang OWS" color="#9B59B6" defaultOpen={true}>
+        <div style={{
+          background: "linear-gradient(135deg, rgba(155,89,182,0.12) 0%, rgba(155,89,182,0.04) 100%)",
+          border: "1px solid rgba(155,89,182,0.3)",
+          borderRadius: "12px",
+          padding: "14px",
+          marginBottom: "12px",
+        }}>
+          <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "1.5px", color: "#9B59B6", fontWeight: 700, marginBottom: "6px" }}>Web</div>
+          <a href="https://mijnrooster.amsterdamumc.nl/" target="_blank" rel="noopener" style={{
+            color: "#fff", fontSize: "14px", fontFamily: "'JetBrains Mono', monospace", textDecoration: "none",
+            display: "block", marginBottom: "12px",
+          }}>mijnrooster.amsterdamumc.nl ↗</a>
+
+          <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "1.5px", color: "#9B59B6", fontWeight: 700, marginBottom: "6px" }}>App</div>
+          <div style={{ fontSize: "13px", color: "#ccc", marginBottom: "4px" }}>Ortec ESS 7 <span style={{ color: "#666" }}>(App Store / Play Store)</span></div>
+          <div style={{ fontSize: "13px", color: "#ccc", marginBottom: "12px" }}>Toegangscode: <span style={{ fontFamily: "'JetBrains Mono', monospace", color: "#fff", background: "rgba(155,89,182,0.25)", padding: "2px 8px", borderRadius: "4px", fontWeight: 700 }}>AUMCP</span></div>
+
+          <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "1.5px", color: "#9B59B6", fontWeight: 700, marginBottom: "6px" }}>Code prefix</div>
+          <div style={{ fontSize: "13px", color: "#ccc" }}>
+            <span style={{ color: "#fff", fontWeight: 700 }}>M</span> = Meibergdreef (AMC) · <span style={{ color: "#fff", fontWeight: 700 }}>B</span> = Boelelaan (VU)
+          </div>
+        </div>
+      </Collapse>
+
+      {/* Voorkeur vs Verlof */}
+      <Collapse title="⚠ Voorkeur vs Verlof" color="#E74C3C" defaultOpen={true}>
+        <div style={{ fontSize: "12px", color: "#E74C3C", fontStyle: "italic", marginBottom: "10px" }}>
+          Cruciaal onderscheid — wil je zéker vrij zijn, vraag dan altijd VERLOF aan, geen voorkeur.
+        </div>
+
+        <div style={{
+          background: "rgba(52,152,219,0.08)",
+          border: "1px solid rgba(52,152,219,0.3)",
+          borderLeft: "4px solid #3498DB",
+          borderRadius: "10px",
+          padding: "12px",
+          marginBottom: "10px",
+        }}>
+          <div style={{ fontWeight: 700, color: "#3498DB", fontSize: "14px", marginBottom: "8px" }}>📝 Voorkeur</div>
+          <ul style={{ margin: 0, paddingLeft: "18px", fontSize: "12px", color: "#ccc", lineHeight: 1.7 }}>
+            <li>Verzoek aan roostermaker — <strong style={{ color: "#fff" }}>geen garantie</strong></li>
+            <li>Voor "wel/niet werken op datum X"</li>
+            <li>Max 3 werkdagen aaneen "niet werken"</li>
+            <li>Verwerkt ~3 mnd vóór roosteruitgave</li>
+            <li>Leidinggevende ziet dit niet</li>
+          </ul>
+        </div>
+
+        <div style={{
+          background: "rgba(46,204,113,0.08)",
+          border: "1px solid rgba(46,204,113,0.3)",
+          borderLeft: "4px solid #2ECC71",
+          borderRadius: "10px",
+          padding: "12px",
+        }}>
+          <div style={{ fontWeight: 700, color: "#2ECC71", fontSize: "14px", marginBottom: "8px" }}>🏖 Verlof</div>
+          <ul style={{ margin: 0, paddingLeft: "18px", fontSize: "12px", color: "#ccc", lineHeight: 1.7 }}>
+            <li>Aanvraag aan leidinggevende — <strong style={{ color: "#fff" }}>beoordeeld & goedgekeurd</strong></li>
+            <li>Voor gegarandeerd vrij zijn (vakantie)</li>
+            <li>Roostermakers plannen daarna VA-dagen in</li>
+          </ul>
+        </div>
+      </Collapse>
+
+      {/* Zelfroosteren */}
+      <Collapse title="🆕 Zelfroosteren (vanaf augustus 2026)" color="#1ABC9C">
+        <div style={{
+          background: "rgba(26,188,156,0.08)",
+          border: "1px solid rgba(26,188,156,0.3)",
+          borderLeft: "4px solid #1ABC9C",
+          borderRadius: "10px",
+          padding: "12px",
+          marginBottom: "10px",
+        }}>
+          <div style={{ fontSize: "13px", color: "#fff", marginBottom: "8px", lineHeight: 1.5 }}>
+            <strong style={{ color: "#1ABC9C" }}>Zelfroosteren vervangt dienstwensen.</strong> Eerste rooster: <strong>augustus 2026</strong>.
+          </div>
+          <ul style={{ margin: 0, paddingLeft: "18px", fontSize: "12px", color: "#ccc", lineHeight: 1.7 }}>
+            <li>Per ronde een periode openstellen — communicatie via Outlook-agenda</li>
+            <li>Vul je gewenste diensten in via app of mijnrooster.amsterdamumc.nl</li>
+            <li>Je ziet hoeveel collega's zich al hebben aangemeld voor een dienst</li>
+            <li>Alleen diensten passend bij jouw functieprofiel & kwalificaties zichtbaar</li>
+            <li>Roosteraars maken het rooster kloppend, met oog op eerlijke verdeling</li>
+            <li>Verlofaanvragen blijven gelijk (apart van zelfroosteren)</li>
+          </ul>
+        </div>
+      </Collapse>
+
+      {/* Jokers */}
+      <Collapse title="🃏 Jokers — extra zwaarwegende wensen" color="#E91E63">
+        <div style={{
+          background: "linear-gradient(135deg, rgba(233,30,99,0.12) 0%, rgba(233,30,99,0.03) 100%)",
+          border: "1px solid rgba(233,30,99,0.3)",
+          borderRadius: "12px",
+          padding: "14px",
+          marginBottom: "10px",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "10px" }}>
+            <div style={{
+              background: "#E91E63", color: "#fff", width: "40px", height: "40px",
+              borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: "22px", fontWeight: 700,
+            }}>3</div>
+            <div>
+              <div style={{ fontSize: "14px", fontWeight: 700, color: "#fff" }}>jokers per AMW per maand</div>
+              <div style={{ fontSize: "11px", color: "#999" }}>Niet overdraagbaar</div>
+            </div>
+          </div>
+          <ul style={{ margin: 0, paddingLeft: "18px", fontSize: "12px", color: "#ccc", lineHeight: 1.7 }}>
+            <li>Markeer een dienstwens of vrije dag die <strong style={{ color: "#fff" }}>echt belangrijk</strong> is</li>
+            <li>Roosteraars wegen deze zwaarder mee — geen garantie</li>
+            <li>Serie nachtdiensten: joker bij start = geldt voor hele reeks</li>
+            <li>Joker op zaterdag = geldt voor hele weekend</li>
+          </ul>
+        </div>
+      </Collapse>
+
+      {/* ATW */}
+      <Collapse title="⚖ ATW — arbeidstijdenwet regels" color="#F39C12">
+        <div style={{ fontSize: "11px", color: "#888", marginBottom: "12px", lineHeight: 1.5, fontStyle: "italic" }}>
+          Vertaling naar AUMC roostercodes. Het ziekenhuis kan boetes krijgen bij schending.
+        </div>
+
+        <div style={{ marginBottom: "14px" }}>
+          <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "1.5px", color: "#F39C12", fontWeight: 700, marginBottom: "6px", borderBottom: "1px solid rgba(243,156,18,0.3)", paddingBottom: "4px" }}>
+            Arbeidstijd
+          </div>
+          <ul style={{ margin: 0, paddingLeft: "18px", fontSize: "12px", color: "#ccc", lineHeight: 1.7 }}>
+            <li>Max <strong style={{ color: "#fff" }}>12 uur per dienst</strong></li>
+            <li>Max <strong style={{ color: "#fff" }}>60 uur per week</strong> (ma t/m zo)</li>
+            <li>Bij 9 uur/dag → max 6 dagen/week = 54 uur</li>
+          </ul>
+        </div>
+
+        <div style={{ marginBottom: "14px" }}>
+          <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "1.5px", color: "#F39C12", fontWeight: 700, marginBottom: "6px", borderBottom: "1px solid rgba(243,156,18,0.3)", paddingBottom: "4px" }}>
+            Dagelijkse rust
+          </div>
+          <ul style={{ margin: 0, paddingLeft: "18px", fontSize: "12px", color: "#ccc", lineHeight: 1.7 }}>
+            <li>Norm: <strong style={{ color: "#fff" }}>11 uur</strong> aaneengesloten tussen 2 diensten</li>
+            <li>1× per week mag <strong style={{ color: "#fff" }}>8 uur</strong> (bv. avond tot 23:00 → start volgende dag 7:00)</li>
+            <li>Dagdienst na avonddienst: standaard niet gewenst, ruilen mag</li>
+          </ul>
+        </div>
+
+        <div style={{ marginBottom: "14px" }}>
+          <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "1.5px", color: "#F39C12", fontWeight: 700, marginBottom: "6px", borderBottom: "1px solid rgba(243,156,18,0.3)", paddingBottom: "4px" }}>
+            Nachtarbeid
+          </div>
+          <ul style={{ margin: 0, paddingLeft: "18px", fontSize: "12px", color: "#ccc", lineHeight: 1.7 }}>
+            <li>Na <strong style={{ color: "#fff" }}>1 nachtdienst</strong> → 14 uur rust (uitzondering: min 8 uur)</li>
+            <li>Na <strong style={{ color: "#fff" }}>3 nachtdiensten</strong> → 46 uur rust</li>
+            <li><strong style={{ color: "#E74C3C" }}>BD na A1: NIET toegestaan</strong> (7u45min rust)</li>
+            <li><strong style={{ color: "#2ECC71" }}>D1 na A1: WEL toegestaan</strong> (8 uur rust)</li>
+          </ul>
+        </div>
+
+        <div style={{
+          background: "rgba(243,156,18,0.08)",
+          border: "1px solid rgba(243,156,18,0.3)",
+          borderRadius: "8px",
+          padding: "10px",
+          fontSize: "12px",
+          color: "#ccc",
+          lineHeight: 1.5,
+        }}>
+          📅 <strong style={{ color: "#F39C12" }}>Minimaal 22 vrije weekenden per jaar.</strong> Eén dag in het weekend werken = telt al als gewerkt weekend.
+        </div>
+      </Collapse>
+
+      {/* Onderling ruilen */}
+      <Collapse title="🔄 Onderling ruilen via OWS" color="#3498DB">
+        <ul style={{ margin: 0, paddingLeft: "18px", fontSize: "13px", color: "#ccc", lineHeight: 1.7 }}>
+          <li>Ruilen kan zelf via OWS — niet meer via roosteraars (behalve 3-hoeksruil)</li>
+          <li>Collega moet voldoen aan <strong style={{ color: "#fff" }}>functieprofiel, kwalificaties, ATW & cao</strong></li>
+          <li>AMW ↔ SPS'er: alleen als SPS'er die dag een anesthesiedag heeft</li>
+        </ul>
+        <div style={{
+          marginTop: "12px",
+          background: "rgba(231,76,60,0.08)",
+          border: "1px solid rgba(231,76,60,0.3)",
+          borderLeft: "4px solid #E74C3C",
+          borderRadius: "8px",
+          padding: "10px",
+          fontSize: "12px",
+          color: "#ccc",
+          lineHeight: 1.5,
+        }}>
+          ⚠ <strong style={{ color: "#E74C3C" }}>Ruiling &lt;1 dag tevoren</strong> (of vrijdag voor weekend/maandag): <strong style={{ color: "#fff" }}>meld de dagcoördinatie zelf</strong> i.v.m. EPIC-indeling.
+        </div>
+      </Collapse>
+
+      {/* Roostercodes per groep */}
+      {ROOSTER_GROEPEN.map((groep, gi) => (
+        <Collapse key={gi} title={groep.naam} color={groep.kleur}>
+          <div style={{ overflowX: "auto" }}>
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "1.6fr 0.7fr 0.7fr",
+              gap: "4px",
+              padding: "8px 0",
+              borderBottom: "1px solid rgba(255,255,255,0.1)",
+              fontSize: "10px",
+              textTransform: "uppercase",
+              letterSpacing: "1px",
+              color: "#666",
+              fontWeight: 700,
+            }}>
+              <div>Dienst</div>
+              <div style={{ textAlign: "center" }}>AMC</div>
+              <div style={{ textAlign: "center" }}>VU</div>
+            </div>
+            {groep.codes.map((c, i) => (
+              <div key={i} style={{
+                display: "grid",
+                gridTemplateColumns: "1.6fr 0.7fr 0.7fr",
+                gap: "4px",
+                padding: "8px 4px",
+                borderBottom: i < groep.codes.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                borderLeft: `4px solid ${groep.kleur}`,
+                paddingLeft: "8px",
+                alignItems: "center",
+              }}>
+                <div>
+                  <div style={{ fontSize: "12px", color: "#fff", fontWeight: 600, lineHeight: 1.3 }}>{c.naam}</div>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", color: groep.kleur, fontWeight: 700 }}>{c.amc}</div>
+                  <div style={{ fontSize: "9px", color: "#666" }}>{c.tijdAMC}</div>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", color: groep.kleur, fontWeight: 700 }}>{c.vu}</div>
+                  <div style={{ fontSize: "9px", color: "#666" }}>{c.tijdVU}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Collapse>
+      ))}
+
+      {/* Studenten */}
+      <Collapse title="Studenten / leerlingen" color="#16A085">
+        <div style={{ overflowX: "auto" }}>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "1.6fr 0.7fr 0.7fr",
+            gap: "4px",
+            padding: "8px 0",
+            borderBottom: "1px solid rgba(255,255,255,0.1)",
+            fontSize: "10px",
+            textTransform: "uppercase",
+            letterSpacing: "1px",
+            color: "#666",
+            fontWeight: 700,
+          }}>
+            <div>Dienst</div>
+            <div style={{ textAlign: "center" }}>AMC</div>
+            <div style={{ textAlign: "center" }}>VU</div>
+          </div>
+          {ROOSTER_STUDENT.map((c, i) => (
+            <div key={i} style={{
+              display: "grid",
+              gridTemplateColumns: "1.6fr 0.7fr 0.7fr",
+              gap: "4px",
+              padding: "8px 4px",
+              borderBottom: i < ROOSTER_STUDENT.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+              borderLeft: "4px solid #16A085",
+              paddingLeft: "8px",
+              alignItems: "center",
+            }}>
+              <div style={{ fontSize: "12px", color: "#fff", fontWeight: 600, lineHeight: 1.3 }}>{c.naam}</div>
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", color: "#16A085", fontWeight: 700 }}>{c.amc}</div>
+                <div style={{ fontSize: "9px", color: "#666" }}>{c.tijdAMC}</div>
+              </div>
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", color: "#16A085", fontWeight: 700 }}>{c.vu}</div>
+                <div style={{ fontSize: "9px", color: "#666" }}>{c.tijdVU}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Collapse>
+
+      {/* Diensttoeslagen */}
+      <Collapse title="Diensttoeslagen (CAO-codes)" color="#F39C12">
+        <div style={{ fontSize: "11px", color: "#888", marginBottom: "10px", lineHeight: 1.5 }}>
+          Codes die je terugziet in je rooster of jaarurenkaart.
+        </div>
+        {DIENST_TOESLAGEN.map((t, i) => (
+          <div key={i} style={{
+            display: "grid",
+            gridTemplateColumns: "70px 1fr",
+            gap: "10px",
+            padding: "8px 0",
+            borderBottom: i < DIENST_TOESLAGEN.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+            alignItems: "start",
+          }}>
+            <div style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "12px",
+              fontWeight: 700,
+              color: "#F39C12",
+              background: "rgba(243,156,18,0.12)",
+              padding: "4px 6px",
+              borderRadius: "4px",
+              textAlign: "center",
+            }}>{t.code}</div>
+            <div style={{ fontSize: "12px", color: "#ccc", lineHeight: 1.4, paddingTop: "4px" }}>{t.uitleg}</div>
+          </div>
+        ))}
+      </Collapse>
+
+      {/* Balansverlof */}
+      <Collapse title="💰 Balansverlof" color="#16A085">
+        <div style={{ fontSize: "11px", color: "#888", marginBottom: "12px", lineHeight: 1.5, fontStyle: "italic" }}>
+          Verlofuren sparen zonder vervaltermijn — voor je werk-privé balans.
+        </div>
+
+        <div style={{
+          background: "rgba(22,160,133,0.08)",
+          border: "1px solid rgba(22,160,133,0.3)",
+          borderLeft: "4px solid #16A085",
+          borderRadius: "10px",
+          padding: "12px",
+          marginBottom: "10px",
+        }}>
+          <ul style={{ margin: 0, paddingLeft: "18px", fontSize: "12px", color: "#ccc", lineHeight: 1.7 }}>
+            <li>Sparen tot <strong style={{ color: "#fff" }}>max 100× je weekuren</strong> (36 u → 3600 u)</li>
+            <li><strong style={{ color: "#fff" }}>Verjaart NIET</strong> — i.t.t. wettelijk (1,5 jr) / bovenwettelijk (5 jr)</li>
+            <li>Opnemen alleen in overleg met leidinggevende</li>
+          </ul>
+        </div>
+
+        <div style={{ marginBottom: "14px" }}>
+          <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "1.5px", color: "#16A085", fontWeight: 700, marginBottom: "8px", borderBottom: "1px solid rgba(22,160,133,0.3)", paddingBottom: "4px" }}>
+            📅 Koopperiodes (in MijnHR)
+          </div>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1.2fr",
+            gap: "6px",
+            fontSize: "12px",
+            color: "#ccc",
+          }}>
+            <div style={{ fontWeight: 600, color: "#fff" }}>Vakantietoeslag</div>
+            <div style={{ fontFamily: "'JetBrains Mono', monospace", color: "#16A085" }}>18 april – 8 mei</div>
+            <div style={{ fontWeight: 600, color: "#fff" }}>Eindejaarsuitkering</div>
+            <div style={{ fontFamily: "'JetBrains Mono', monospace", color: "#16A085" }}>17 okt – 8 nov</div>
+          </div>
+        </div>
+
+        <div style={{
+          background: "rgba(243,156,18,0.08)",
+          border: "1px solid rgba(243,156,18,0.3)",
+          borderLeft: "4px solid #F39C12",
+          borderRadius: "8px",
+          padding: "10px",
+          fontSize: "12px",
+          color: "#ccc",
+          lineHeight: 1.5,
+          marginBottom: "10px",
+        }}>
+          ⚠ <strong style={{ color: "#F39C12" }}>Pensioenwaarschuwing:</strong> max <strong style={{ color: "#fff" }}>10% van bruto jaaruren</strong> kopen per jaar — anders lagere pensioenopbouw met terugwerkende kracht.
+        </div>
+
+        <div style={{
+          background: "rgba(231,76,60,0.08)",
+          border: "1px solid rgba(231,76,60,0.3)",
+          borderLeft: "4px solid #E74C3C",
+          borderRadius: "8px",
+          padding: "10px",
+          fontSize: "12px",
+          color: "#ccc",
+          lineHeight: 1.5,
+        }}>
+          🚫 <strong style={{ color: "#E74C3C" }}>Bij pensionering niet uit te betalen</strong> — wel inzetbaar vóór pensioen. Bij uitdiensttreding (anders dan pensioen): wél uit te betalen.
+        </div>
+
+        <div style={{ fontSize: "10px", color: "#666", marginTop: "10px", textAlign: "right", fontStyle: "italic" }}>
+          Volledige uitleg: K2 iProva → "Balansverlof"
+        </div>
+      </Collapse>
+
+      {/* Tips */}
+      <Collapse title="Tips & contact" color="#3498DB">
+        <ul style={{ margin: 0, paddingLeft: "18px", fontSize: "13px", color: "#ccc", lineHeight: 1.7 }}>
+          <li><strong style={{ color: "#fff" }}>Periode invoeren:</strong> 1<sup>e</sup> t/m laatste dag van de maand (niet 1<sup>e</sup> tot 1<sup>e</sup>)</li>
+          <li><strong style={{ color: "#fff" }}>Jaarurenkaart</strong> = voorheen "moederkaart" — real-time saldo</li>
+          <li>Uitwisselaars: één rooster (niet meer twee)</li>
+          <li>Help nodig? Roosteraars: <strong style={{ color: "#fff" }}>Mirjam, Harjan, Michael, Leendert, Esther</strong></li>
+        </ul>
+      </Collapse>
+    </div>
+  );
+
   const renderBuizen = () => (
     <div>
-      <Collapse title="Buissoorten AMC — CDL" color="#E74C3C" defaultOpen={true}>
+      <Collapse title="Buissoorten AUMC, locatie AMC — CDL" color="#E74C3C" defaultOpen={true}>
         <div style={{ fontSize: "11px", color: "#666", marginBottom: "10px" }}>
-          Tik op de dop voor een afbeelding · Amsterdam UMC locatie AMC
+          Tik op de dop voor een afbeelding · AUMC, locatie AMC
         </div>
         {BUISSOORTEN.map((buis, i) => (
           <div key={i} style={{
@@ -4414,8 +5333,8 @@ function ZakkaartApp() {
     const renderContent = () => {
     switch (activeSection) {
       case "nood": return renderNood();
-      case "tel-amc": return renderTelefoon(TELEFOON_AMC, "AMC");
-      case "tel-vumc": return renderTelefoon(TELEFOON_VUMC, "VUmc");
+      case "tel-amc": return renderTelefoon(TELEFOON_AMC, "AUMC, locatie AMC");
+      case "tel-vumc": return renderTelefoon(TELEFOON_VUMC, "AUMC, locatie VU");
       case "ok": return renderOK();
       case "abcde": return renderABCDE();
       case "medicatie": return renderMedicatie();
@@ -4434,6 +5353,7 @@ function ZakkaartApp() {
       case "plattegrond": return renderPlattegrond();
       case "buizen": return renderBuizen();
       case "ecg": return renderECG();
+      case "rooster": return renderRooster();
       default: return null;
     }
   };
@@ -4442,7 +5362,7 @@ function ZakkaartApp() {
 
   return (
     <div
-      data-theme={settings.theme}
+      data-theme="dark"
       style={{
         height: "100vh",
         overflowY: "auto",
@@ -4456,7 +5376,6 @@ function ZakkaartApp() {
         zoom: zoomMap[settings.fontSize] || 1,
       }}
     >
-      {renderSettings()}
       <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
       {/* Buis modal — top level zodat position:fixed altijd werkt */}
@@ -4593,16 +5512,6 @@ function ZakkaartApp() {
                 <span style={{ color: activeSectionData.color }}>{activeSectionData.icon}</span>
                 <span style={{ fontWeight: 700, fontSize: "16px" }}>{activeSectionData.label}</span>
               </div>
-            )}
-            {!activeSection && (
-              <button
-                onClick={() => setSettingsOpen(true)}
-                style={{
-                  background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: "10px", padding: "8px 10px", cursor: "pointer",
-                  color: "#aaa", fontSize: "18px", lineHeight: 1,
-                }}
-              >⚙</button>
             )}
           </div>
         </div>
